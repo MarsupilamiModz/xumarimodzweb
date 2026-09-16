@@ -1,0 +1,263 @@
+import { unstable_cache } from "next/cache";
+import { getDb } from "@/lib/db";
+import type { CommissionSource, UserRole } from "@prisma/client";
+
+export async function getActiveCommissionRule(source: CommissionSource, role?: UserRole) {
+  return (await getDb()).commissionRule.findFirst({
+    where: {
+      source,
+      isActive: true,
+      ...(role && { OR: [{ targetRole: role }, { targetRole: null }] }),
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function recordCommission(input: {
+  userId: string;
+  source: CommissionSource;
+  sourceId?: string;
+  grossCents: number;
+  role?: UserRole;
+  description?: string;
+}) {
+  const rule = await getActiveCommissionRule(input.source, input.role);
+  let amountCents = 0;
+
+  if (rule) {
+    amountCents =
+      rule.type === "FIXED"
+        ? rule.value
+        : Math.round((input.grossCents * rule.value) / 10000);
+  }
+
+  if (amountCents <= 0) return null;
+
+  return (await getDb()).commissionEntry.create({
+    data: {
+      userId: input.userId,
+      ruleId: rule?.id,
+      source: input.source,
+      sourceId: input.sourceId,
+      amountCents,
+      description: input.description,
+    },
+  });
+}
+
+export async function getUserCommissionSummary(userId: string) {
+  const [pending, paid, payouts] = await Promise.all([
+    (await getDb()).commissionEntry.aggregate({
+      where: { userId, status: "PENDING" },
+      _sum: { amountCents: true },
+      _count: true,
+    }),
+    (await getDb()).commissionEntry.aggregate({
+      where: { userId, status: "PAID" },
+      _sum: { amountCents: true },
+      _count: true,
+    }),
+    (await getDb()).payout.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+  ]);
+
+  return {
+    pendingCents: pending._sum.amountCents ?? 0,
+    pendingCount: pending._count,
+    paidCents: paid._sum.amountCents ?? 0,
+    paidCount: paid._count,
+    payouts,
+  };
+}
+
+export function getCreatorAnalytics(userId: string) {
+  return unstable_cache(
+    async () => {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const [mods, downloads, purchases, coupons, events, commissions] = await Promise.all([
+      (await getDb()).mod.findMany({
+        where: { authorId: userId },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          downloadCount: true,
+          pricing: true,
+          status: true,
+        },
+        orderBy: { downloadCount: "desc" },
+        take: 10,
+      }),
+      (await getDb()).download.count({
+        where: { mod: { authorId: userId }, createdAt: { gte: thirtyDaysAgo } },
+      }),
+      (await getDb()).modPurchase.aggregate({
+        where: { mod: { authorId: userId } },
+        _sum: { amountCents: true },
+        _count: true,
+      }),
+      (await getDb()).coupon.findMany({
+        where: { ownerUserId: userId },
+        select: {
+          id: true,
+          code: true,
+          usedCount: true,
+          clickCount: true,
+          conversionCount: true,
+          revenueCents: true,
+          discountCents: true,
+          isActive: true,
+        },
+      }),
+      (await getDb()).affiliateEvent.groupBy({
+        by: ["eventType"],
+        where: { ownerUserId: userId, createdAt: { gte: thirtyDaysAgo } },
+        _count: true,
+      }),
+      (await getDb()).commissionEntry.aggregate({
+        where: { userId, createdAt: { gte: thirtyDaysAgo } },
+        _sum: { amountCents: true },
+      }),
+    ]);
+
+    const totalDownloads = mods.reduce((s, m) => s + m.downloadCount, 0);
+    const couponUses = coupons.reduce((s, c) => s + c.usedCount, 0);
+    const couponRevenue = coupons.reduce((s, c) => s + c.revenueCents, 0);
+
+    return {
+      mods,
+      totalDownloads,
+      monthlyDownloads: downloads,
+      purchaseRevenue: purchases._sum.amountCents ?? 0,
+      purchaseCount: purchases._count,
+      coupons,
+      couponUses,
+      couponRevenue,
+      events: events.map((e) => ({ type: e.eventType, count: e._count })),
+      monthlyCommission: commissions._sum.amountCents ?? 0,
+    };
+    },
+    [`creator-analytics-${userId}`],
+    { revalidate: 60 }
+  )();
+}
+
+export function getPartnerAnalytics(userId: string) {
+  return unstable_cache(
+    async () => {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const [coupons, events, commissions, referrals] = await Promise.all([
+      (await getDb()).coupon.findMany({
+        where: { ownerUserId: userId },
+        orderBy: { usedCount: "desc" },
+      }),
+      (await getDb()).affiliateEvent.findMany({
+        where: { ownerUserId: userId, createdAt: { gte: thirtyDaysAgo } },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      }),
+      (await getDb()).commissionEntry.aggregate({
+        where: { userId },
+        _sum: { amountCents: true },
+      }),
+      (await getDb()).affiliateEvent.count({
+        where: { ownerUserId: userId, eventType: "SIGNUP" },
+      }),
+    ]);
+
+    const clicks = events.filter((e) => e.eventType === "CLICK").length;
+    const conversions = events.filter((e) => e.eventType === "CONVERSION").length;
+    const totalRevenue = coupons.reduce((s, c) => s + c.revenueCents, 0);
+    const totalDiscount = coupons.reduce((s, c) => s + c.discountCents, 0);
+
+    return {
+      coupons,
+      clicks,
+      conversions,
+      conversionRate: clicks > 0 ? (conversions / clicks) * 100 : 0,
+      totalRevenue,
+      totalDiscount,
+      totalUses: coupons.reduce((s, c) => s + c.usedCount, 0),
+      totalCommission: commissions._sum.amountCents ?? 0,
+      referrals,
+      recentEvents: events.slice(0, 20),
+    };
+    },
+    [`partner-analytics-${userId}`],
+    { revalidate: 60 }
+  )();
+}
+
+export async function getDailyChartData(userId: string, days = 14) {
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  const events = await (await getDb()).affiliateEvent.findMany({
+    where: { ownerUserId: userId, createdAt: { gte: since } },
+    select: { createdAt: true, eventType: true, amountCents: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const buckets = new Map<string, { clicks: number; conversions: number; revenue: number }>();
+  for (let i = 0; i < days; i++) {
+    const d = new Date(Date.now() - (days - 1 - i) * 24 * 60 * 60 * 1000);
+    buckets.set(d.toISOString().slice(0, 10), { clicks: 0, conversions: 0, revenue: 0 });
+  }
+
+  for (const e of events) {
+    const key = e.createdAt.toISOString().slice(0, 10);
+    const b = buckets.get(key);
+    if (!b) continue;
+    if (e.eventType === "CLICK") b.clicks++;
+    if (e.eventType === "CONVERSION" || e.eventType === "SUBSCRIPTION") {
+      b.conversions++;
+      b.revenue += e.amountCents;
+    }
+  }
+
+    return Array.from(buckets.entries()).map(([date, data]) => ({ date, ...data }));
+}
+
+export type VersionAnalyticsRow = {
+  modTitle: string;
+  modSlug: string;
+  version: string;
+  channel: string;
+  isPrimary: boolean;
+  totalDownloads: number;
+  recentDownloads: number;
+};
+
+export function getCreatorVersionAnalytics(userId: string): Promise<VersionAnalyticsRow[]> {
+  return unstable_cache(
+    async () => {
+      const versions = await (await getDb()).modVersion.findMany({
+        where: { mod: { authorId: userId } },
+        orderBy: { downloadCount: "desc" },
+        take: 20,
+        select: {
+          version: true,
+          downloadCount: true,
+          isPrimary: true,
+          channel: true,
+          mod: { select: { title: true, slug: true } },
+        },
+      });
+
+      return versions.map((v) => ({
+        modTitle: v.mod.title,
+        modSlug: v.mod.slug,
+        version: v.version,
+        channel: v.channel,
+        isPrimary: v.isPrimary,
+        totalDownloads: v.downloadCount,
+        recentDownloads: v.downloadCount,
+      }));
+    },
+    [`creator-version-analytics-${userId}`],
+    { revalidate: 60 }
+  )();
+}

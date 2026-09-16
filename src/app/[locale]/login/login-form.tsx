@@ -1,0 +1,129 @@
+"use client";
+
+import Link from "next/link";
+import { useParams, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { createClient } from "@/lib/supabase/client";
+import { userFriendlyAuthMessage } from "@/lib/auth-errors";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { AuthLogo } from "@/components/auth/auth-page-shell";
+import type { AuthBrandingSettings } from "@/lib/auth-branding";
+import { AuthLanguagePicker } from "@/components/auth/auth-language-picker";
+import { resolveLoginRedirect } from "@/lib/auth-redirect";
+import { useState } from "react";
+
+export function LoginForm({ authBranding }: { authBranding?: AuthBrandingSettings }) {
+  const t = useTranslations("auth");
+  const params = useParams();
+  const locale = params.locale as string;
+  const searchParams = useSearchParams();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const authError = searchParams.get("error");
+  const verifyPending = searchParams.get("verify") === "pending";
+  const discordLinked = searchParams.get("discord") === "linked";
+  const authErrorMessage =
+    verifyPending
+      ? t("verifyPending")
+      : discordLinked
+        ? t("discordLinked")
+        : authError === "db_sync"
+          ? t("errors.dbSync")
+          : authError === "auth_exchange"
+            ? t("errors.authExchange")
+            : authError
+              ? t("errors.generic")
+              : "";
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    const supabase = createClient();
+    const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (err) {
+      setError(userFriendlyAuthMessage(err.message, locale));
+      return;
+    }
+    window.location.assign(
+      resolveLoginRedirect(locale, {
+        redirect: searchParams.get("redirect"),
+        next: searchParams.get("next"),
+      })
+    );
+  }
+
+  async function loginWithDiscord() {
+    setLoading(true);
+    setError("");
+    const supabase = createClient();
+    const callbackUrl = new URL("/api/auth/callback", window.location.origin);
+    callbackUrl.searchParams.set("next", resolveLoginRedirect(locale, {
+      redirect: searchParams.get("redirect"),
+      next: searchParams.get("next"),
+    }));
+    callbackUrl.searchParams.set("locale", locale);
+
+    const { error: err } = await supabase.auth.signInWithOAuth({
+      provider: "discord",
+      options: {
+        redirectTo: callbackUrl.toString(),
+      },
+    });
+    if (err) {
+      setError(t("errors.generic"));
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-md px-4 py-16">
+      <AuthLanguagePicker locale={locale} />
+      {authBranding ? <AuthLogo branding={authBranding} variant="login" /> : null}
+      <Card className="glass p-8">
+        <h1 className="text-2xl font-bold text-gradient">{authBranding?.loginTitle ?? t("login")}</h1>
+        {(authBranding?.loginDescription || t("loginSubtitle")) && (
+          <p className="mt-2 text-sm text-muted-foreground">
+            {authBranding?.loginDescription ?? t("loginSubtitle")}
+          </p>
+        )}
+        <form onSubmit={handleLogin} className="mt-6 space-y-4">
+          <div>
+            <label className="text-sm">{t("email")}</label>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="mt-1" />
+          </div>
+          <div>
+            <div className="flex justify-between">
+              <label className="text-sm">{t("password")}</label>
+              <Link href={`/${locale}/forgot-password`} className="text-xs text-neon-purple hover:underline">
+                {t("forgot")}
+              </Link>
+            </div>
+            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="mt-1" />
+          </div>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          {!error && authErrorMessage && (
+            <p className={`text-sm ${verifyPending ? "text-neon-purple" : "text-destructive"}`}>
+              {authErrorMessage}
+            </p>
+          )}
+          <Button variant="neon" className="w-full" type="submit" disabled={loading}>
+            {t("login")}
+          </Button>
+        </form>
+        <Button variant="outline" className="w-full mt-4" onClick={loginWithDiscord} disabled={loading}>
+          {authBranding?.discordButtonText ?? t("discord")}
+        </Button>
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+          <Link href={`/${locale}/register`} className="text-neon-purple hover:underline">Create account</Link>
+        </p>
+      </Card>
+    </div>
+  );
+}

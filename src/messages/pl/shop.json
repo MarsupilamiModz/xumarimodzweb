@@ -1,0 +1,9 @@
+{
+  "shop": {
+    "title": "Sklep usług na zamówienie",
+    "subtitle": "Zamów HUD, grafikę, dźwięki, skrypty i więcej.",
+    "empty": "Brak dostępnych usług.",
+    "admin": { "title": "Zarządzanie sklepem", "subtitle": "Usługi, typy, kategorie i formularze." },
+    "orders": { "adminTitle": "Centrum zamówień", "adminSubtitle": "Zarządzaj zamówieniami i workflow." }
+  }
+}

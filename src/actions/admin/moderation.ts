@@ -1,0 +1,329 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { UserRole, type Prisma } from "@prisma/client";
+import { z } from "zod";
+import { getDb } from "@/lib/db";
+import { createAuditLog } from "@/lib/audit";
+import {
+  canManageRole,
+  fail,
+  ok,
+  requireActionPermission,
+  type ActionResult,
+} from "@/lib/action-utils";
+import { invalidateUserSessionCache } from "@/lib/auth-cache";
+import { banExpiresFromPreset, type BanDurationPreset } from "@/lib/user-moderation";
+import type { ModerationAction } from "@/lib/moderation-types";
+import {
+  createModerationLogEntry,
+  createUserBanRecord,
+  flaggedUsersWhere,
+  listModerationUsers,
+  listRecentModerationLogs,
+  updateUserModerationFields,
+  type ModerationUserRow,
+} from "@/lib/moderation-store";
+
+const banSchema = z.object({
+  userId: z.string().cuid(),
+  reason: z.string().min(3).max(500),
+  internalNote: z.string().max(2000).optional(),
+  duration: z.enum(["1d", "3d", "7d", "30d", "permanent"]),
+});
+
+async function logModeration(
+  userId: string,
+  actorId: string,
+  action: ModerationAction,
+  reason?: string | null,
+  internalNote?: string | null,
+  expiresAt?: Date | null,
+  metadata?: Prisma.InputJsonValue
+) {
+  await createModerationLogEntry({
+    userId,
+    actorId,
+    action,
+    reason,
+    internalNote,
+    expiresAt,
+    metadata,
+  });
+}
+
+async function assertCanModerate(actorId: string, actorRole: UserRole, targetId: string) {
+  if (actorId === targetId) return fail("Cannot moderate yourself");
+  const target = await (await getDb()).user.findUnique({
+    where: { id: targetId },
+    select: { id: true, role: true, deletedAt: true, supabaseId: true },
+  });
+  if (!target || target.deletedAt) return fail("User not found");
+  if (!canManageRole(actorRole, target.role)) return fail("Forbidden");
+  return ok(target);
+}
+
+export async function getModerationOverview(params?: { search?: string; page?: number }) {
+  const { error } = await requireActionPermission("users.read");
+  if (error) return error;
+
+  const page = params?.page ?? 1;
+  const limit = 25;
+  const skip = (page - 1) * limit;
+
+  const where = {
+    deletedAt: null,
+    ...(params?.search && {
+      OR: [
+        { username: { contains: params.search, mode: "insensitive" as const } },
+        { email: { contains: params.search, mode: "insensitive" as const } },
+      ],
+    }),
+  };
+
+  const [users, total, recentLogs, flagged] = await Promise.all([
+    listModerationUsers({ where, skip, take: limit }),
+    (await getDb()).user.count({ where }),
+    listRecentModerationLogs(30),
+    (await getDb()).user.count({ where: flaggedUsersWhere }),
+  ]);
+
+  return ok({
+    users: users satisfies ModerationUserRow[],
+    total,
+    pages: Math.ceil(total / limit),
+    page,
+    recentLogs,
+    flagged,
+  });
+}
+
+export async function moderateBanUser(input: z.infer<typeof banSchema>): Promise<ActionResult> {
+  const { user: actor, error } = await requireActionPermission("users.write");
+  if (error) return error;
+
+  const parsed = banSchema.safeParse(input);
+  if (!parsed.success) return fail(parsed.error.message);
+
+  const check = await assertCanModerate(actor.id, actor.role, parsed.data.userId);
+  if (!check.success) return check;
+
+  const expiresAt = banExpiresFromPreset(parsed.data.duration as BanDurationPreset);
+  const banType = parsed.data.duration === "permanent" ? "PERMANENT" : "TEMPORARY";
+  const action: ModerationAction =
+    parsed.data.duration === "permanent" ? "BAN_PERMANENT" : "BAN_TEMPORARY";
+
+  await updateUserModerationFields(parsed.data.userId, {
+    isBanned: true,
+    banReason: parsed.data.reason,
+    bannedAt: new Date(),
+    bannedById: actor.id,
+    banExpiresAt: expiresAt,
+    moderationNote: parsed.data.internalNote ?? null,
+  });
+  await createUserBanRecord({
+    userId: parsed.data.userId,
+    reason: parsed.data.reason,
+    bannedById: actor.id,
+    banType,
+    expiresAt,
+    internalNote: parsed.data.internalNote,
+  });
+
+  const target = check.data!;
+  if (target.supabaseId) invalidateUserSessionCache(target.supabaseId);
+
+  await logModeration(
+    parsed.data.userId,
+    actor.id,
+    action,
+    parsed.data.reason,
+    parsed.data.internalNote,
+    expiresAt,
+    { duration: parsed.data.duration }
+  );
+  await createAuditLog({
+    actorId: actor.id,
+    action: "user.ban",
+    entityType: "User",
+    entityId: parsed.data.userId,
+    metadata: { reason: parsed.data.reason, duration: parsed.data.duration },
+  });
+
+  revalidatePath("/admin/moderation");
+  revalidatePath("/admin/users");
+  return ok(undefined);
+}
+
+export async function moderateUnbanUser(userId: string, note?: string): Promise<ActionResult> {
+  const { user: actor, error } = await requireActionPermission("users.write");
+  if (error) return error;
+
+  const target = await (await getDb()).user.findUnique({ where: { id: userId } });
+  if (!target) return fail("User not found");
+
+  await updateUserModerationFields(userId, {
+    isBanned: false,
+    banReason: null,
+    bannedAt: null,
+    bannedById: null,
+    banExpiresAt: null,
+  });
+  await (await getDb()).userBan.updateMany({
+    where: { userId, liftedAt: null },
+    data: { liftedAt: new Date() },
+  });
+
+  if (target.supabaseId) invalidateUserSessionCache(target.supabaseId);
+
+  await logModeration(userId, actor.id, "UNBAN", note ?? "Ban lifted by admin");
+  await createAuditLog({ actorId: actor.id, action: "user.unban", entityType: "User", entityId: userId });
+
+  revalidatePath("/admin/moderation");
+  revalidatePath("/admin/users");
+  return ok(undefined);
+}
+
+export async function moderateSuspendUser(userId: string, reason: string): Promise<ActionResult> {
+  const { user: actor, error } = await requireActionPermission("users.write");
+  if (error) return error;
+
+  const check = await assertCanModerate(actor.id, actor.role, userId);
+  if (!check.success) return check;
+
+  await updateUserModerationFields(userId, { isSuspended: true, moderationNote: reason });
+  await logModeration(userId, actor.id, "SUSPEND", reason);
+  await createAuditLog({
+    actorId: actor.id,
+    action: "user.suspend",
+    entityType: "User",
+    entityId: userId,
+    metadata: { reason },
+  });
+
+  revalidatePath("/admin/moderation");
+  return ok(undefined);
+}
+
+export async function moderateUnsuspendUser(userId: string): Promise<ActionResult> {
+  const { user: actor, error } = await requireActionPermission("users.write");
+  if (error) return error;
+
+  await updateUserModerationFields(userId, { isSuspended: false });
+  await logModeration(userId, actor.id, "UNSUSPEND");
+  revalidatePath("/admin/moderation");
+  return ok(undefined);
+}
+
+export async function moderateMuteUser(userId: string, reason?: string): Promise<ActionResult> {
+  const { user: actor, error } = await requireActionPermission("users.write");
+  if (error) return error;
+
+  const check = await assertCanModerate(actor.id, actor.role, userId);
+  if (!check.success) return check;
+
+  await updateUserModerationFields(userId, { isMuted: true });
+  await logModeration(userId, actor.id, "MUTE", reason);
+  revalidatePath("/admin/moderation");
+  return ok(undefined);
+}
+
+export async function moderateUnmuteUser(userId: string): Promise<ActionResult> {
+  const { user: actor, error } = await requireActionPermission("users.write");
+  if (error) return error;
+
+  await updateUserModerationFields(userId, { isMuted: false });
+  await logModeration(userId, actor.id, "UNMUTE");
+  revalidatePath("/admin/moderation");
+  return ok(undefined);
+}
+
+export async function moderateWarnUser(userId: string, reason: string): Promise<ActionResult> {
+  const { user: actor, error } = await requireActionPermission("users.write");
+  if (error) return error;
+
+  const check = await assertCanModerate(actor.id, actor.role, userId);
+  if (!check.success) return check;
+
+  await updateUserModerationFields(userId, {
+    warningCount: { increment: 1 },
+    moderationNote: reason,
+  });
+  await logModeration(userId, actor.id, "WARN", reason);
+  await createAuditLog({
+    actorId: actor.id,
+    action: "user.warn",
+    entityType: "User",
+    entityId: userId,
+    metadata: { reason },
+  });
+
+  revalidatePath("/admin/moderation");
+  return ok(undefined);
+}
+
+export async function moderateResetWarnings(userId: string): Promise<ActionResult> {
+  const { user: actor, error } = await requireActionPermission("users.write");
+  if (error) return error;
+
+  await updateUserModerationFields(userId, { warningCount: 0 });
+  await logModeration(userId, actor.id, "RESET_WARNINGS");
+  revalidatePath("/admin/moderation");
+  return ok(undefined);
+}
+
+export async function moderateSoftDeleteUser(userId: string, reason: string): Promise<ActionResult> {
+  const { user: actor, error } = await requireActionPermission("users.write");
+  if (error) return error;
+
+  const check = await assertCanModerate(actor.id, actor.role, userId);
+  if (!check.success) return check;
+
+  await (await getDb()).user.update({ where: { id: userId }, data: { deletedAt: new Date() } });
+  await logModeration(userId, actor.id, "SOFT_DELETE", reason);
+  await createAuditLog({ actorId: actor.id, action: "user.soft_delete", entityType: "User", entityId: userId });
+
+  revalidatePath("/admin/moderation");
+  revalidatePath("/admin/users");
+  return ok(undefined);
+}
+
+export async function moderateRestoreUser(userId: string): Promise<ActionResult> {
+  const { user: actor, error } = await requireActionPermission("users.write");
+  if (error) return error;
+
+  await (await getDb()).user.update({ where: { id: userId }, data: { deletedAt: null } });
+  await logModeration(userId, actor.id, "RESTORE");
+  revalidatePath("/admin/moderation");
+  revalidatePath("/admin/users");
+  return ok(undefined);
+}
+
+export async function backfillSoundMetadata(limit = 20) {
+  const { error } = await requireActionPermission("settings.write");
+  if (error) return error;
+
+  const profiles = await (await getDb()).soundProfile.findMany({
+    where: {
+      previewFileKey: { not: null },
+      OR: [
+        { previewDurationSeconds: null },
+        { previewDurationSeconds: 0 },
+        { durationSeconds: null },
+        { durationSeconds: 0 },
+      ],
+    },
+    take: limit,
+    select: { modId: true },
+  });
+
+  const { ensureSoundProfileMetadata } = await import("@/lib/audio-probe");
+  let updated = 0;
+  for (const p of profiles) {
+    const result = await ensureSoundProfileMetadata(p.modId);
+    if (result?.previewDurationSeconds || result?.durationSeconds) updated++;
+  }
+
+  revalidatePath("/admin/security");
+  return ok({ scanned: profiles.length, updated });
+}

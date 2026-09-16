@@ -1,0 +1,162 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { SafeImage } from "@/components/ui/safe-image";
+import { SoundWaveformPlayer } from "@/components/audio/sound-waveform-player";
+import { resolveAssetUrl } from "@/lib/assets";
+import { getPreviewLimitSeconds, formatDuration } from "@/lib/sound";
+import { estimateBitrateKbps, formatFileSize } from "@/lib/sound-security";
+import { formatNumber, formatDate } from "@/lib/format-locale";
+import type { SoundPreviewType } from "@prisma/client";
+import { Badge } from "@/components/ui/badge";
+import { useTranslations } from "next-intl";
+
+type Props = {
+  modId: string;
+  slug: string;
+  title: string;
+  sound: {
+    artist: string | null;
+    audioCategory: string;
+    genre: string | null;
+    durationSeconds: number | null;
+    previewDurationSeconds: number | null;
+    previewType: SoundPreviewType;
+    previewCustomSeconds: number | null;
+    coverImageKey: string | null;
+    waveformPeaks: number[] | null;
+    playCount: number;
+    previewFileSize?: bigint | number | null;
+    createdAt?: Date | string | null;
+  };
+};
+
+export function SoundProductPlayer({ modId, slug, title, sound }: Props) {
+  const ts = useTranslations("sounds");
+  const [stream, setStream] = useState<{
+    streamUrl: string;
+    previewLimitSeconds: number | null;
+    waveformPeaks: number[] | null;
+    durationSeconds: number | null;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [streamError, setStreamError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setStreamError(null);
+    void fetch(`/api/sounds/${modId}/stream`, { method: "POST" })
+      .then(async (r) => {
+        const data = await r.json();
+        if (cancelled) return;
+        if (!r.ok || data.error) {
+          setStreamError(data.error ?? "Preview unavailable");
+          setStream(null);
+          return;
+        }
+        setStream({
+          streamUrl: data.playbackUrl ?? data.streamUrl,
+          previewLimitSeconds: data.previewLimitSeconds,
+          waveformPeaks: data.waveformPeaks ?? sound.waveformPeaks,
+          durationSeconds: data.durationSeconds ?? sound.previewDurationSeconds ?? sound.durationSeconds,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setStreamError("Failed to load audio preview");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [modId, sound.waveformPeaks, sound.previewDurationSeconds, sound.durationSeconds]);
+
+  const coverUrl = sound.coverImageKey ? resolveAssetUrl(sound.coverImageKey) : null;
+  const limit = getPreviewLimitSeconds(
+    sound.previewType,
+    sound.previewCustomSeconds,
+    sound.previewDurationSeconds ?? sound.durationSeconds
+  );
+  const displayDuration =
+    stream?.durationSeconds ?? sound.previewDurationSeconds ?? sound.durationSeconds;
+  const bitrate = estimateBitrateKbps(sound.previewFileSize ?? null, displayDuration ?? null);
+
+  return (
+    <div className="glass rounded-xl border border-border/50 overflow-hidden">
+      <div className="grid md:grid-cols-[220px_1fr] gap-0">
+        <div className="relative aspect-square md:aspect-auto md:min-h-[220px] bg-gradient-to-br from-neon-purple/20 to-neon-blue/10">
+          {coverUrl ? (
+            <SafeImage src={coverUrl} alt={title} fill className="object-cover" sizes="220px" />
+          ) : (
+            <div className="flex h-full min-h-[180px] items-center justify-center text-5xl text-neon-purple/60">♪</div>
+          )}
+        </div>
+        <div className="p-5 space-y-3">
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="outline">{ts(`categories.${categoryKey(sound.audioCategory)}`)}</Badge>
+            {sound.genre && <Badge variant="outline">{sound.genre}</Badge>}
+            <Badge variant="secondary">{formatNumber(sound.playCount)} {ts("plays")}</Badge>
+          </div>
+          {sound.artist && <p className="text-sm text-muted-foreground">{sound.artist}</p>}
+          {loading ? (
+            <p className="text-sm text-muted-foreground animate-pulse">{ts("loadingPreview")}</p>
+          ) : stream ? (
+            <SoundWaveformPlayer
+              modId={modId}
+              slug={slug}
+              title={title}
+              artist={sound.artist}
+              coverUrl={coverUrl}
+              streamUrl={stream.streamUrl}
+              durationSeconds={stream.durationSeconds ?? sound.previewDurationSeconds ?? sound.durationSeconds}
+              previewLimitSeconds={stream.previewLimitSeconds ?? limit}
+              waveformPeaks={stream.waveformPeaks}
+            />
+          ) : (
+            <p className="text-sm text-destructive/90">
+              {streamError ?? ts("previewUnavailable")}
+            </p>
+          )}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 text-xs text-muted-foreground border-t border-border/30">
+            <div>
+              <p className="uppercase tracking-wider opacity-70">Duration</p>
+              <p className="text-foreground">{formatDuration(displayDuration)}</p>
+            </div>
+            <div>
+              <p className="uppercase tracking-wider opacity-70">Size</p>
+              <p className="text-foreground">{formatFileSize(sound.previewFileSize ?? null)}</p>
+            </div>
+            <div>
+              <p className="uppercase tracking-wider opacity-70">Bitrate</p>
+              <p className="text-foreground">{bitrate ? `${bitrate} kbps` : "—"}</p>
+            </div>
+            <div>
+              <p className="uppercase tracking-wider opacity-70">Uploaded</p>
+              <p className="text-foreground">
+                {sound.createdAt ? formatDate(new Date(sound.createdAt)) : "—"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function categoryKey(cat: string) {
+  const map: Record<string, string> = {
+    ENGINE_SOUNDS: "engineSounds",
+    WEAPON_SOUNDS: "weaponSounds",
+    SIRENS: "sirens",
+    UI_SOUNDS: "uiSounds",
+    AMBIENT_SOUNDS: "ambientSounds",
+    RADIO_PACKS: "radioPacks",
+    VOICE_PACKS: "voicePacks",
+    EFFECTS: "effects",
+    MUSIC_PACKS: "musicPacks",
+    CUSTOM_AUDIO: "customAudio",
+  };
+  return map[cat] ?? "customAudio";
+}

@@ -1,0 +1,37 @@
+{
+  "shop": {
+    "title": "Custom Services Shop",
+    "subtitle": "Order custom HUDs, graphics, sounds, scripts, and more from the Xumari Modz team.",
+    "empty": "No services available yet. Check back soon.",
+    "featured": "Featured",
+    "products": "Services",
+    "orderNow": "Order now",
+    "requestQuote": "Request quote",
+    "startingAt": "Starting at {price}",
+    "customQuote": "Custom quotation",
+    "admin": {
+      "title": "Shop Management",
+      "subtitle": "Manage custom services, product types, categories, forms, and pricing."
+    },
+    "orders": {
+      "adminTitle": "Order Center",
+      "adminSubtitle": "Manage custom orders, assignments, deliveries, and team workflow.",
+      "status": {
+        "PENDING": "Pending",
+        "PAID": "Paid",
+        "QUOTED": "Quoted",
+        "IN_REVIEW": "In Review",
+        "ACCEPTED": "Accepted",
+        "ASSIGNED": "Assigned",
+        "IN_PROGRESS": "In Progress",
+        "WAITING_FOR_CUSTOMER": "Waiting For Customer",
+        "REVISION_REQUESTED": "Revision Requested",
+        "REVIEW": "Review",
+        "COMPLETED": "Completed",
+        "DELIVERED": "Delivered",
+        "CANCELED": "Cancelled",
+        "REFUNDED": "Refunded"
+      }
+    }
+  }
+}

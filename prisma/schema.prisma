@@ -1,0 +1,3225 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  SUPPORT
+  CREATOR
+  PARTNER
+  DESIGNER
+  PREMIUM
+  USER
+}
+
+enum MediaEntityType {
+  MOD_SCREENSHOT
+  MOD_MEDIA
+  USER_AVATAR
+  SOUND_PREVIEW
+  SOUND_COVER
+  CREATOR_BANNER
+  PARTNER_LOGO
+  GAME_ASSET
+  COLLECTION_COVER
+  OTHER
+}
+
+enum ModVisibility {
+  PUBLIC
+  UNLISTED
+  PRIVATE
+}
+
+enum ModPricing {
+  FREE
+  PREMIUM
+  PAID
+}
+
+enum ProductType {
+  MOD
+  SOUND
+}
+
+enum SoundAudioCategory {
+  ENGINE_SOUNDS
+  WEAPON_SOUNDS
+  SIRENS
+  UI_SOUNDS
+  AMBIENT_SOUNDS
+  RADIO_PACKS
+  VOICE_PACKS
+  EFFECTS
+  MUSIC_PACKS
+  CUSTOM_AUDIO
+}
+
+enum SoundPreviewType {
+  FULL
+  SECONDS_30
+  SECONDS_60
+  CUSTOM
+}
+
+enum ModStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum FileScanStatus {
+  PENDING
+  SCANNING
+  CLEAN
+  APPROVED
+  SUSPICIOUS
+  MALWARE
+  REJECTED
+  MANUAL_REVIEW
+  FAILED
+}
+
+enum SecurityRiskLevel {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ScanQueueStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum SecurityAuditAction {
+  UPLOAD
+  SCAN_STARTED
+  SCAN_COMPLETED
+  APPROVAL
+  REJECTION
+  DOWNLOAD
+  RE_SCAN
+  TRUST_MARKED
+  REVIEW_REQUESTED
+  SCAN_REMOVED
+  BULK_APPROVE
+  BULK_REJECT
+}
+
+enum CreatorTrustLevel {
+  NEW
+  VERIFIED
+  TRUSTED
+  ELITE
+}
+
+enum VersionChannel {
+  STABLE
+  BETA
+  ARCHIVED
+}
+
+enum CollectionVisibility {
+  PUBLIC
+  PRIVATE
+  FEATURED
+}
+
+enum CollectionModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
+
+enum ApplicationStatus {
+  PENDING
+  UNDER_REVIEW
+  NEEDS_CHANGES
+  APPROVED
+  REJECTED
+}
+
+enum UploadSessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABORTED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  INCOMPLETE
+}
+
+enum LicenseStatus {
+  ACTIVE
+  REDEEMED
+  EXPIRED
+  REVOKED
+  PAUSED
+}
+
+enum CouponType {
+  PERCENT
+  FIXED
+}
+
+enum AffiliateCodeType {
+  CREATOR
+  AFFILIATE
+  PUBLIC
+  PRIVATE
+}
+
+enum SocialPlatform {
+  YOUTUBE
+  TWITCH
+  TIKTOK
+  INSTAGRAM
+  TWITTER
+  DISCORD
+  WEBSITE
+}
+
+enum CommissionType {
+  FIXED
+  PERCENT
+  RECURRING
+}
+
+enum CommissionSource {
+  SUBSCRIPTION
+  MOD_SALE
+  CUSTOM_ORDER
+  COUPON
+  REFERRAL
+  BONUS
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+  CANCELLED
+}
+
+enum AffiliateEventType {
+  CLICK
+  CONVERSION
+  SUBSCRIPTION
+  SIGNUP
+}
+
+enum PublisherLevel {
+  UNVERIFIED
+  VERIFIED
+  TRUSTED
+  ELITE
+  OFFICIAL_PARTNER
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  QUOTED
+  IN_REVIEW
+  ACCEPTED
+  ASSIGNED
+  IN_PROGRESS
+  WAITING_FOR_CUSTOMER
+  REVISION_REQUESTED
+  REVIEW
+  COMPLETED
+  DELIVERED
+  CANCELED
+  REFUNDED
+}
+
+enum TicketStatus {
+  NEW
+  OPEN
+  PENDING
+  IN_PROGRESS
+  WAITING_FOR_USER
+  WAITING_FOR_STAFF
+  ESCALATED
+  RESOLVED
+  CLOSED
+}
+
+enum TicketDepartment {
+  SUPPORT
+  MODERATION
+  CREATOR_MANAGEMENT
+  PARTNER_MANAGEMENT
+  BILLING
+  TECHNICAL_SUPPORT
+  ADMINISTRATION
+}
+
+enum TicketCategory {
+  GENERAL_SUPPORT
+  TECHNICAL_SUPPORT
+  BILLING
+  PREMIUM_ACCESS
+  CREATOR_SUPPORT
+  PARTNER_SUPPORT
+  BUG_REPORT
+  CUSTOM_ORDERS
+  MOD_ISSUES
+  ACCOUNT_SUPPORT
+}
+
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+  CRITICAL
+}
+
+enum BannerDisplayType {
+  SMALL
+  FEATURED
+  CUSTOM
+}
+
+enum BannerAlign {
+  CENTER
+  TOP
+  BOTTOM
+  LEFT
+  RIGHT
+}
+
+enum NotificationType {
+  MESSAGE
+  TICKET_REPLY
+  CREATOR_ANNOUNCEMENT
+  PARTNER_ANNOUNCEMENT
+  MOD_UPDATE
+  ORDER_UPDATE
+  PREMIUM_ACTIVATED
+  PREMIUM_EXPIRING
+  NEW_FOLLOWER
+  COMMENT_REPLY
+  MENTION
+  SYSTEM
+}
+
+enum BillingType {
+  ONE_TIME
+  RECURRING
+}
+
+enum MembershipPlanKind {
+  STANDARD
+  LIFETIME
+  LIMITED
+  EVENT
+  CREATOR
+  PARTNER
+}
+
+enum ExclusiveProgramType {
+  CLOSED_ALPHA
+  CLOSED_BETA
+  INVITE_ONLY
+}
+
+enum ExclusiveApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WAITLIST
+}
+
+enum TranslationJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  APPROVED
+}
+
+enum AdFormat {
+  BANNER
+  SIDEBAR
+  POPUP
+  NATIVE
+  MOBILE
+  FOOTER
+  SPONSOR
+}
+
+enum AdProviderType {
+  ADSENSE
+  MICROSOFT
+  NITROPAY
+  EZOIC
+  CUSTOM
+  AFFILIATE
+  DIRECT
+}
+
+enum AchievementRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum AchievementCategory {
+  USER
+  CREATOR
+  PARTNER
+  SEASONAL
+  HIDDEN
+}
+
+enum CreatorRankTier {
+  BRONZE
+  SILVER
+  GOLD
+  DIAMOND
+  ELITE
+  LEGENDARY
+}
+
+enum LeaderboardMetric {
+  DOWNLOADS
+  REVENUE
+  LIKES
+  GROWTH
+  ACTIVE
+  REVIEWED
+  TRENDING
+  RATED
+}
+
+enum LeaderboardPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+  ALL_TIME
+}
+
+enum MembershipTier {
+  FREE
+  PREMIUM_LITE
+  PREMIUM
+  PREMIUM_MAX
+}
+
+enum UserMembershipStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  INCOMPLETE
+  EXPIRED
+}
+
+enum SoundApprovalStatus {
+  PENDING_REVIEW
+  VIRUS_TOTAL_VERIFIED
+  MANUALLY_APPROVED
+  REVIEW_REQUIRED
+  REJECTED
+  CHANGES_REQUESTED
+}
+
+enum OrderPaymentStatus {
+  UNPAID
+  AWAITING_PAYMENT
+  PAID
+  REFUNDED
+}
+
+enum OrderPaymentMethod {
+  STRIPE
+  PAYPAL
+  BANK_TRANSFER
+  CREDITS
+}
+
+model User {
+  id                String    @id @default(cuid())
+  supabaseId        String    @unique
+  email             String    @unique
+  username          String    @unique
+  displayName       String?
+  avatarUrl         String?
+  avatarOriginalUrl String?
+  avatar64Url       String?
+  avatar128Url      String?
+  avatar256Url      String?
+  bio               String?
+  locale            String    @default("en")
+  discordId         String?   @unique
+  discordUsername   String?
+  stripeCustomerId  String?   @unique
+  emailVerified     Boolean   @default(false)
+  emailVerifiedAt   DateTime?
+  isBanned          Boolean   @default(false)
+  banReason         String?
+  bannedAt          DateTime?
+  banExpiresAt      DateTime?
+  bannedById        String?
+  bannedBy          User?     @relation("BanIssuer", fields: [bannedById], references: [id])
+  isMuted           Boolean   @default(false)
+  isSuspended       Boolean   @default(false)
+  uploadBanned      Boolean   @default(false)
+  commentBanned     Boolean   @default(false)
+  warningCount      Int       @default(0)
+  moderationNote    String?   @db.Text
+  deletedAt         DateTime?
+  role              UserRole  @default(USER)
+  permissionGroupId String?
+  permissionGroup   PermissionGroup? @relation(fields: [permissionGroupId], references: [id], onDelete: SetNull)
+  teamDepartment    String?
+  teamBadge         String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  bansIssued        User[]    @relation("BanIssuer")
+  banRecords        UserBan[] @relation("BannedUser")
+  bansPerformed     UserBan[] @relation("BanActor")
+  ticketMessages    TicketMessage[]
+  creatorProfile    CreatorProfile?
+  partnerProfile    PartnerProfile?
+  designerProfile   DesignerProfile?
+  mods              Mod[]              @relation("ModAuthor")
+  modCollaborations ModCollaborator[]  @relation("ModCollaboratorUser")
+  hostingClicks     HostingClick[]
+  reviews           ModReview[]
+  favorites         ModFavorite[]
+  downloads         Download[]
+  subscriptions     Subscription[]
+  licenseKeys       LicenseKey[]       @relation("LicenseOwner")
+  licenseKeysAssigned LicenseKey[]     @relation("LicenseAssignee")
+  licenseActivations LicenseActivation[]
+  couponRedemptions CouponRedemption[]
+  customOrders      CustomOrder[]      @relation("OrderClient")
+  assignedOrders    CustomOrder[]      @relation("OrderAssignee")
+  orderMessages     OrderMessage[]
+  orderActivities   OrderActivity[]    @relation("OrderActivityActor")
+  orderDeliveries   OrderDelivery[]    @relation("OrderDeliveryUploader")
+  notifications     Notification[]
+  auditLogs         AuditLog[]         @relation("AuditActor")
+  supportTickets    SupportTicket[]    @relation("TicketUser")
+  assignedTickets   SupportTicket[]    @relation("TicketAssignee")
+  watchedTickets    TicketWatcher[]    @relation("TicketWatcher")
+  purchases         ModPurchase[]
+  blogPosts         BlogPost[]
+  ownedCoupons      Coupon[]           @relation("CouponOwner")
+  affiliateEvents   AffiliateEvent[]   @relation("AffiliateOwner")
+  membershipPurchases MembershipPurchase[]
+  exclusiveApplications ExclusiveApplication[]
+  exclusivePrograms   ExclusiveProgram[] @relation("ExclusiveAuthor")
+  translationJobs     TranslationJob[] @relation("TranslationApprover")
+  referralLinksCreated ReferralLink[]  @relation("ReferralCreator")
+  referralSignup       ReferralSignup?
+  commissionEntries CommissionEntry[]
+  payouts           Payout[]
+  profileFollowers  ProfileFollow[]    @relation("Follower")
+  profileFollowing  ProfileFollow[]    @relation("Following")
+  creatorLicenses   LicenseKey[]       @relation("LicenseCreator")
+  userAchievements  UserAchievement[]
+  userProgress      UserProgress?
+  userMembership    UserMembership?
+  shopPurchases     ShopPurchase[]
+  soundApprovals    SoundProfile[]         @relation("SoundApprover")
+  soundUploads      SoundProfile[]         @relation("SoundUploader")
+  tutorialsAuthored Tutorial[]             @relation("TutorialAuthor")
+  tutorialLikes     TutorialLike[]
+  tutorialComments  TutorialComment[]
+  moderationLogs    UserModerationLog[]    @relation("ModerationTarget")
+  moderationActions UserModerationLog[]    @relation("ModerationActor")
+  modCollections    ModCollection[]
+  collectionFollows ModCollectionFollow[]
+  apiKeys           ApiKey[]
+  creatorApplications CreatorApplication[]
+  partnerApplications PartnerApplication[]
+  storageUploads    StorageUploadSession[]
+  uploadedMedia     MediaFile[]            @relation("MediaUploader")
+  securityReviews   SecurityReview[]       @relation("SecurityReviewer")
+  trustedFiles      TrustedFile[]          @relation("TrustedFileApprover")
+  trustedCreators   TrustedCreator[]       @relation("TrustedCreatorApprover")
+  securityLogs      SecurityLog[]
+  teamProfile       TeamMember?
+  emailLogs         EmailLog[]
+  chatMemberships   ChatChannelMember[]
+  chatMessages      ChatMessage[]
+  chatChannelsCreated ChatChannel[] @relation("ChatChannelCreator")
+  contentReports      ContentReport[] @relation("ReportReporter")
+  assignedReports     ContentReport[] @relation("ReportAssignee")
+  securityEvents      UserSecurityEvent[]
+  mfaBackupCodes      UserMfaBackupCode[]
+  platformEvents      PlatformEvent[]
+  searchQueries       SearchQueryLog[]
+  userPermissions     UserPermission[]   @relation("UserPermissions")
+  permissionGrants    UserPermission[]   @relation("PermissionGrants")
+  roleHistory         UserRoleHistory[]  @relation("UserRoleHistory")
+  roleChangesMade     UserRoleHistory[]  @relation("RoleChanges")
+
+  mfaEnabled          Boolean   @default(false)
+  mfaEnabledAt        DateTime?
+
+  @@index([email])
+  @@index([username])
+  @@index([role])
+  @@index([isBanned])
+  @@index([banExpiresAt])
+  @@index([deletedAt])
+  @@index([createdAt])
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  description String?
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  role         UserRole
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([role, permissionId])
+}
+
+model Game {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  description     String?  @db.Text
+  shortDescription String? @db.VarChar(300)
+  coverUrl        String?
+  logoUrl         String?
+  backgroundUrl   String?
+  bannerUrl       String?
+  iconUrl         String?
+  bannerDisplayType BannerDisplayType @default(FEATURED)
+  bannerHeightPx  Int?
+  bannerFocusX    Float             @default(50)
+  bannerFocusY    Float             @default(50)
+  bannerZoom      Float             @default(1)
+  bannerAlign     BannerAlign       @default(CENTER)
+  seoTitle        String?
+  seoDescription  String?
+  isFeatured      Boolean  @default(false)
+  sortOrder       Int      @default(0)
+  isActive        Boolean  @default(true)
+  modePickerOverlay     Float    @default(0.72)
+  modePickerBlurPx      Int      @default(16)
+  modePickerGlowEnabled Boolean  @default(true)
+  modePickerAnimation   String   @default("fade")
+  modePickerOpacity     Float    @default(0.85)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  categories GameCategory[]
+  modes      GameMode[]
+  mods       Mod[]
+  siteBanners SiteBanner[]
+  hostingPartner GameHostingPartner?
+  hostingBanners HostingPartnerBanner[]
+
+  @@index([isActive, isFeatured])
+  @@index([sortOrder])
+}
+
+model GameMode {
+  id           String   @id @default(cuid())
+  gameId       String
+  game         Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  slug         String
+  name         String
+  description  String?  @db.Text
+  thumbnailUrl String?
+  bannerUrl    String?
+  backgroundUrl String?
+  logoUrl      String?
+  iconUrl      String?
+  accentColor  String?
+  sortOrder    Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  mods       Mod[]
+  categories GameCategory[]
+
+  @@unique([gameId, slug])
+  @@index([gameId, sortOrder])
+  @@index([gameId, isActive])
+}
+
+model GameCategory {
+  id          String  @id @default(cuid())
+  gameId      String
+  game        Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  modeId      String?
+  mode        GameMode? @relation(fields: [modeId], references: [id], onDelete: SetNull)
+  parentId    String?
+  parent      GameCategory?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children    GameCategory[] @relation("CategoryTree")
+  slug        String
+  name        String
+  description String?  @db.Text
+  thumbnailUrl String?
+  bannerUrl    String?
+  iconUrl      String?
+  accentColor  String?
+  sortOrder   Int     @default(0)
+  isVisible   Boolean @default(true)
+
+  mods Mod[]
+  siteBanners SiteBanner[]
+
+  @@unique([gameId, slug])
+  @@index([gameId, sortOrder])
+  @@index([gameId, isVisible])
+  @@index([gameId, modeId])
+  @@index([parentId])
+}
+
+model CreatorProfile {
+  id                  String         @id @default(cuid())
+  userId              String         @unique
+  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug                String         @unique
+  tagline             String?
+  description         String?        @db.Text
+  bannerUrl           String?
+  website             String?
+  creatorCode         String?        @unique
+  couponCode          String?        @unique
+  referralCode        String?        @unique
+  level               PublisherLevel @default(UNVERIFIED)
+  commissionRateBps   Int            @default(500)
+  commissionOverrideBps Int?
+  isVerified          Boolean        @default(false)
+  isFeatured          Boolean        @default(false)
+  isSuspended         Boolean        @default(false)
+  isPublic            Boolean        @default(false)
+  isHomepage          Boolean        @default(false)
+  isTrending          Boolean        @default(false)
+  sortOrder           Int            @default(0)
+  totalDownloads      Int            @default(0)
+  totalRevenueCents   Int            @default(0)
+  totalSales          Int            @default(0)
+  totalCouponUses     Int            @default(0)
+  totalDiscountCents  Int            @default(0)
+  totalClicks         Int            @default(0)
+  totalConversions    Int            @default(0)
+  followerCount       Int            @default(0)
+  rankTier            CreatorRankTier @default(BRONZE)
+  rankScore           Float          @default(0)
+  leaderboardPinned   Boolean        @default(false)
+  pinnedUntil         DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  socialLinks SocialLink[]
+  collections ModCollection[]
+  trustRecord TrustedCreator?
+  hostingBanners HostingPartnerBanner[]
+
+  hostingBannerUrl      String?
+  hostingAffiliateLink  String?
+  hostingDescription    String?  @db.Text
+  hostingPartnerEnabled Boolean  @default(false)
+
+  @@index([isVerified, isFeatured])
+  @@index([isPublic, sortOrder])
+  @@index([isHomepage, sortOrder])
+  @@index([isTrending])
+  @@index([level])
+  @@index([creatorCode])
+  @@index([rankTier, rankScore])
+}
+
+model PartnerProfile {
+  id                  String         @id @default(cuid())
+  userId              String         @unique
+  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug                String         @unique
+  tagline             String?
+  description         String?        @db.Text
+  bannerUrl           String?
+  logoUrl             String?
+  website             String?
+  affiliateCode       String?        @unique
+  couponCode          String?        @unique
+  referralCode        String?        @unique
+  level               PublisherLevel @default(UNVERIFIED)
+  commissionRateBps   Int            @default(1000)
+  commissionOverrideBps Int?
+  isVerified          Boolean        @default(false)
+  isFeatured          Boolean        @default(false)
+  isSuspended         Boolean        @default(false)
+  isBanned            Boolean        @default(false)
+  isPublic            Boolean        @default(false)
+  isHomepage          Boolean        @default(false)
+  sortOrder           Int            @default(0)
+  totalClicks         Int            @default(0)
+  totalConversions    Int            @default(0)
+  totalRevenueCents   Int            @default(0)
+  totalEarningsCents  Int            @default(0)
+  totalCouponUses     Int            @default(0)
+  totalDiscountCents  Int            @default(0)
+  followerCount       Int            @default(0)
+  discordInviteUrl    String?
+  discordWidgetUrl    String?
+  discordServerId     String?
+  discordWidgetEnabled Boolean       @default(true)
+  discordDescription  String?        @db.Text
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  socialLinks SocialLink[]
+  siteBanners SiteBanner[]
+
+  @@index([isVerified, isFeatured])
+  @@index([isPublic, sortOrder])
+  @@index([level])
+  @@index([affiliateCode])
+}
+
+model SocialLink {
+  id               String         @id @default(cuid())
+  creatorProfileId String?
+  creatorProfile   CreatorProfile? @relation(fields: [creatorProfileId], references: [id], onDelete: Cascade)
+  partnerProfileId String?
+  partnerProfile   PartnerProfile? @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
+  platform         SocialPlatform
+  url              String
+  sortOrder        Int            @default(0)
+
+  @@index([creatorProfileId])
+  @@index([partnerProfileId])
+}
+
+model DesignerProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug           String   @unique
+  specialty      String?
+  portfolioUrl   String?
+  avatarUrl      String?
+  bannerUrl      String?
+  isVerified     Boolean  @default(false)
+  totalDownloads Int      @default(0)
+  totalEarnings  Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Mod {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  title           String
+  description     String        @db.Text
+  shortDescription String?
+  gameId          String
+  game            Game          @relation(fields: [gameId], references: [id])
+  modeId          String?
+  mode            GameMode?     @relation(fields: [modeId], references: [id], onDelete: SetNull)
+  categoryId      String?
+  category        GameCategory? @relation(fields: [categoryId], references: [id])
+  authorId        String
+  author          User          @relation("ModAuthor", fields: [authorId], references: [id])
+  visibility      ModVisibility @default(PUBLIC)
+  productType     ProductType   @default(MOD)
+  pricing         ModPricing    @default(FREE)
+  status          ModStatus     @default(DRAFT)
+  priceCents      Int?
+  stripePriceId   String?
+  downloadCount   Int           @default(0)
+  favoriteCount   Int           @default(0)
+  averageRating   Float         @default(0)
+  reviewCount     Int           @default(0)
+  isFeatured      Boolean       @default(false)
+  supportedVersions String[]
+  translations    Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  publishedAt     DateTime?
+
+  versions      ModVersion[]
+  media         ModMedia[]
+  screenshots   ModScreenshot[]
+  videos        ModVideo[]
+  tags          ModTag[]
+  dependencies  ModDependency[] @relation("ModDeps")
+  dependents    ModDependency[] @relation("ModDependents")
+  reviews       ModReview[]
+  favorites     ModFavorite[]
+  downloads     Download[]
+  changelog     ModChangelog[]
+  purchases     ModPurchase[]
+  licenseKeys   LicenseKey[]
+  shopProducts  ShopProduct[]
+
+  exclusivePrograms ExclusiveProgram[]
+
+  collections ModCollectionItem[]
+  soundProfile SoundProfile?
+  soundPlays   SoundPlay[]
+  platformEvents PlatformEvent[]
+  siteBanners    SiteBanner[]
+  collaborators  ModCollaborator[]
+  hostingBanners HostingPartnerBanner[]
+
+  serverPartnerEnabled Boolean         @default(false)
+  serverPartnerId      String?
+  serverPartner        HostingPartner? @relation("ModHostingPartner", fields: [serverPartnerId], references: [id], onDelete: SetNull)
+  serverPartnerLink    String?
+  serverPartnerBanner  String?
+
+  @@index([status, visibility, downloadCount])
+  @@index([status, visibility, updatedAt(sort: Desc)])
+  @@index([status, visibility, favoriteCount(sort: Desc)])
+  @@index([status, visibility, averageRating(sort: Desc)])
+  @@index([categoryId, status])
+  @@index([gameId, status])
+  @@index([gameId, modeId, status])
+  @@index([modeId, status])
+  @@index([isFeatured, status])
+  @@index([authorId])
+  @@index([publishedAt])
+  @@index([productType, status])
+}
+
+model ModVersion {
+  id          String         @id @default(cuid())
+  modId       String
+  mod         Mod            @relation(fields: [modId], references: [id], onDelete: Cascade)
+  version     String
+  changelog   String?        @db.Text
+  fileKey     String
+  fileSize    BigInt
+  fileName    String
+  originalFileName String @default("")
+  originalExtension String @default("")
+  mimeType    String   @default("application/octet-stream")
+  gameVersion String?
+  sha256      String?
+  scanStatus  FileScanStatus @default(PENDING)
+  scanReport  Json?
+  scannedAt   DateTime?
+  channel     VersionChannel @default(STABLE)
+  isPrimary   Boolean        @default(false)
+  isArchived  Boolean        @default(false)
+  downloadCount Int          @default(0)
+  createdAt   DateTime       @default(now())
+
+  downloads        Download[]
+  scanLogs         FileScanLog[]
+  fileScans        FileScan[]
+  securityReviews  SecurityReview[]
+  trustedFile      TrustedFile?
+  scanQueueItems   ScanQueue[]
+
+  @@unique([modId, version])
+  @@index([modId, isPrimary])
+  @@index([scanStatus])
+  @@index([scannedAt])
+}
+
+model SoundProfile {
+  id                   String             @id @default(cuid())
+  modId                String             @unique
+  mod                  Mod                @relation(fields: [modId], references: [id], onDelete: Cascade)
+  artist               String?
+  audioCategory        SoundAudioCategory @default(CUSTOM_AUDIO)
+  durationSeconds      Int?
+  bpm                  Int?
+  genre                String?
+  previewFileKey       String?
+  previewFileId        String?            @unique
+  previewFileName      String?
+  previewFileSize      BigInt?
+  previewMimeType      String?
+  previewBitrateKbps   Int?
+  previewDurationSeconds Int?
+  uploadedById         String?
+  uploadedBy           User?              @relation("SoundUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+  previewType          SoundPreviewType   @default(FULL)
+  previewCustomSeconds Int?
+  waveformPeaks        Json?
+  coverImageKey        String?
+  previewScanStatus    FileScanStatus     @default(PENDING)
+  approvalStatus       SoundApprovalStatus @default(PENDING_REVIEW)
+  approvedAt           DateTime?
+  approvedById         String?
+  approvedBy           User?              @relation("SoundApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  rejectionReason      String?            @db.Text
+  reviewNotes          String?            @db.Text
+  playCount            Int                @default(0)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@index([audioCategory])
+  @@index([genre])
+  @@index([approvalStatus])
+  @@index([previewScanStatus])
+  @@index([uploadedById])
+  @@map("sound_profiles")
+}
+
+model SoundPlay {
+  id        String   @id @default(cuid())
+  modId     String
+  mod       Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
+  userId    String?
+  ipHash    String?
+  createdAt DateTime @default(now())
+
+  @@index([modId, createdAt])
+  @@index([userId])
+  @@map("sound_plays")
+}
+
+enum ModMediaType {
+  IMAGE
+  YOUTUBE
+}
+
+model ModMedia {
+  id             String       @id @default(cuid())
+  modId          String
+  mod            Mod          @relation(fields: [modId], references: [id], onDelete: Cascade)
+  mediaType      ModMediaType
+  imageUrl       String?
+  videoUrl       String?
+  youtubeVideoId String?
+  orderIndex     Int          @default(0)
+  isFeatured     Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  @@index([modId, orderIndex])
+  @@index([modId, isFeatured])
+  @@map("mod_media")
+}
+
+model ModScreenshot {
+  id        String @id @default(cuid())
+  modId     String
+  mod       Mod    @relation(fields: [modId], references: [id], onDelete: Cascade)
+  url       String
+  sortOrder Int    @default(0)
+}
+
+model ModVideo {
+  id        String @id @default(cuid())
+  modId     String
+  mod       Mod    @relation(fields: [modId], references: [id], onDelete: Cascade)
+  url       String
+  title     String?
+  sortOrder Int    @default(0)
+}
+
+model ModTag {
+  id    String @id @default(cuid())
+  modId String
+  mod   Mod    @relation(fields: [modId], references: [id], onDelete: Cascade)
+  name  String
+
+  @@unique([modId, name])
+  @@index([name])
+}
+
+model ModDependency {
+  id           String                 @id @default(cuid())
+  modId        String
+  mod          Mod                    @relation("ModDeps", fields: [modId], references: [id], onDelete: Cascade)
+  dependencyId String
+  dependency   Mod                    @relation("ModDependents", fields: [dependencyId], references: [id], onDelete: Cascade)
+  isRequired   Boolean                @default(true)
+  relation     ModDependencyRelation  @default(REQUIRED)
+  minVersion   String?
+  notes        String?
+
+  @@unique([modId, dependencyId])
+}
+
+enum ModDependencyRelation {
+  REQUIRED
+  OPTIONAL
+  CONFLICT
+}
+
+model ModChangelog {
+  id        String   @id @default(cuid())
+  modId     String
+  mod       Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
+  version   String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+model ModReview {
+  id        String   @id @default(cuid())
+  modId     String
+  mod       Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int
+  title     String?
+  content   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([modId, userId])
+}
+
+model ModFavorite {
+  id        String   @id @default(cuid())
+  modId     String
+  mod       Mod      @relation(fields: [modId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([modId, userId])
+  @@index([userId, createdAt])
+}
+
+model ModPurchase {
+  id              String   @id @default(cuid())
+  modId           String
+  mod             Mod      @relation(fields: [modId], references: [id])
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  stripePaymentId String?  @unique
+  amountCents     Int
+  createdAt       DateTime @default(now())
+
+  @@unique([modId, userId])
+}
+
+model Download {
+  id           String      @id @default(cuid())
+  modId        String
+  mod          Mod         @relation(fields: [modId], references: [id])
+  versionId    String
+  version      ModVersion  @relation(fields: [versionId], references: [id])
+  userId       String?
+  user         User?       @relation(fields: [userId], references: [id])
+  ipHash       String?
+  userAgent    String?
+  createdAt    DateTime    @default(now())
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([modId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId               String?
+  plan                 MembershipPlan?    @relation(fields: [planId], references: [id], onDelete: SetNull)
+  stripeSubscriptionId String             @unique
+  stripePriceId        String
+  status               SubscriptionStatus @default(ACTIVE)
+  interval             String
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@index([userId, status])
+}
+
+model LicenseKey {
+  id               String        @id @default(cuid())
+  key              String        @unique
+  keyHash          String        @unique
+  label            String?
+  notes            String?       @db.Text
+  status           LicenseStatus @default(ACTIVE)
+  productType      String
+  modId            String?
+  mod              Mod?          @relation(fields: [modId], references: [id], onDelete: SetNull)
+  assignedUserId   String?
+  assignedUser     User?         @relation("LicenseAssignee", fields: [assignedUserId], references: [id])
+  creatorId        String?
+  creator          User?         @relation("LicenseCreator", fields: [creatorId], references: [id])
+  maxActivations   Int           @default(1)
+  activationCount  Int           @default(0)
+  isLifetime       Boolean       @default(false)
+  oneTimeUse       Boolean       @default(false)
+  expiresAt        DateTime?
+  redeemedAt       DateTime?
+  redeemedById     String?
+  redeemedBy       User?         @relation("LicenseOwner", fields: [redeemedById], references: [id])
+  createdById      String?
+  batchId          String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  activations LicenseActivation[]
+
+  @@index([status])
+  @@index([modId])
+  @@index([assignedUserId])
+  @@index([creatorId])
+  @@index([batchId])
+}
+
+model LicenseActivation {
+  id           String     @id @default(cuid())
+  licenseKeyId String
+  licenseKey   LicenseKey @relation(fields: [licenseKeyId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  ipHash       String?
+  userAgent    String?
+  createdAt    DateTime   @default(now())
+
+  @@index([licenseKeyId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Coupon {
+  id              String            @id @default(cuid())
+  code            String            @unique
+  type            CouponType
+  value           Int
+  affiliateType   AffiliateCodeType @default(PUBLIC)
+  ownerUserId     String?
+  owner           User?             @relation("CouponOwner", fields: [ownerUserId], references: [id])
+  maxUses         Int?
+  usedCount       Int               @default(0)
+  clickCount      Int               @default(0)
+  conversionCount Int               @default(0)
+  revenueCents    Int               @default(0)
+  discountCents   Int               @default(0)
+  expiresAt       DateTime?
+  appliesTo       String            @default("all")
+  gameId          String?
+  modId           String?
+  categoryId      String?
+  stripeCouponId  String?
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+
+  redemptions CouponRedemption[]
+  events      AffiliateEvent[]
+
+  @@index([ownerUserId])
+  @@index([affiliateType])
+  @@index([isActive])
+}
+
+model AffiliateEvent {
+  id              String             @id @default(cuid())
+  couponId        String?
+  coupon          Coupon?            @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  code            String
+  ownerUserId     String?
+  owner           User?              @relation("AffiliateOwner", fields: [ownerUserId], references: [id])
+  eventType       AffiliateEventType
+  visitorHash     String?
+  amountCents     Int                @default(0)
+  commissionCents Int                @default(0)
+  metadata        Json?
+  ipHash          String?
+  userAgent       String?
+  createdAt       DateTime           @default(now())
+
+  @@index([ownerUserId, eventType])
+  @@index([code])
+  @@index([couponId])
+  @@index([createdAt])
+}
+
+model CommissionRule {
+  id          String           @id @default(cuid())
+  name        String
+  type        CommissionType
+  value       Int
+  source      CommissionSource
+  targetRole  UserRole?
+  description String?
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  entries CommissionEntry[]
+  partnerApplications PartnerApplication[]
+
+  @@index([source, isActive])
+}
+
+model CommissionEntry {
+  id          String           @id @default(cuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ruleId      String?
+  rule        CommissionRule?  @relation(fields: [ruleId], references: [id], onDelete: SetNull)
+  source      CommissionSource
+  sourceId    String?
+  amountCents Int
+  status      PayoutStatus     @default(PENDING)
+  payoutId    String?
+  payout      Payout?          @relation(fields: [payoutId], references: [id])
+  description String?
+  createdAt   DateTime         @default(now())
+
+  @@index([userId, status])
+  @@index([source])
+  @@index([createdAt])
+}
+
+model Payout {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amountCents Int
+  status      PayoutStatus @default(PENDING)
+  method      String?
+  reference   String?
+  notes       String?
+  paidAt      DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  entries CommissionEntry[]
+
+  @@index([userId, status])
+  @@index([createdAt])
+}
+
+model ProfileFollow {
+  id          String   @id @default(cuid())
+  followerId  String
+  follower    User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId String
+  following   User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+  profileType String
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId, profileType])
+  @@index([followingId, profileType])
+}
+
+model SecureDownloadToken {
+  id        String    @id @default(cuid())
+  modId     String
+  versionId String
+  userId    String
+  tokenHash String    @unique
+  ipHash    String?
+  userAgent String?
+  usedAt    DateTime?
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+
+  @@index([modId, userId])
+  @@index([expiresAt])
+}
+
+model CouponRedemption {
+  id        String   @id @default(cuid())
+  couponId  String
+  coupon    Coupon   @relation(fields: [couponId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([couponId, userId])
+}
+
+model CustomOrder {
+  id                String              @id @default(cuid())
+  clientId          String
+  client            User                @relation("OrderClient", fields: [clientId], references: [id])
+  assigneeId        String?
+  assignee          User?               @relation("OrderAssignee", fields: [assigneeId], references: [id])
+  shopProductId     String?
+  shopProduct       ShopProduct?        @relation(fields: [shopProductId], references: [id], onDelete: SetNull)
+  shopPurchaseId    String?             @unique
+  shopPurchase      ShopPurchase?       @relation(fields: [shopPurchaseId], references: [id], onDelete: SetNull)
+  title             String
+  description       String              @db.Text
+  orderType         String
+  budgetCents       Int?
+  quotedAmountCents Int?
+  finalAmountCents  Int?
+  invoiceNumber     String?             @unique
+  paymentStatus     OrderPaymentStatus  @default(UNPAID)
+  paymentMethod     OrderPaymentMethod?
+  paymentReference  String?
+  paymentNote       String?             @db.Text
+  stripePaymentId   String?
+  discordUsername   String?
+  customerEmail     String?
+  deliveryFileKey   String?
+  deliveryFileName  String?
+  assignedTeam      String?
+  internalNotes     String?             @db.Text
+  formResponses     Json?
+  priority          Int                 @default(0)
+  completedAt              DateTime?
+  deliveredAt              DateTime?
+  requirementsSubmittedAt  DateTime?
+  status            OrderStatus         @default(PENDING)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  messages    OrderMessage[]
+  attachments OrderAttachment[]
+  activities  OrderActivity[]
+  deliveries  OrderDelivery[]
+
+  @@index([status, updatedAt])
+  @@index([assigneeId, status])
+  @@index([clientId, createdAt])
+  @@index([shopProductId])
+}
+
+model OrderMessage {
+  id         String      @id @default(cuid())
+  orderId    String
+  order      CustomOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  senderId   String
+  sender     User        @relation(fields: [senderId], references: [id])
+  content    String      @db.Text
+  isInternal Boolean     @default(false)
+  replyToId  String?
+  readAt     DateTime?
+  createdAt  DateTime    @default(now())
+
+  attachments OrderMessageAttachment[]
+
+  @@index([orderId, createdAt])
+}
+
+model OrderMessageAttachment {
+  id        String       @id @default(cuid())
+  messageId String
+  message   OrderMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  fileKey   String
+  fileName  String
+  mimeType  String
+  fileSize  Int          @default(0)
+  createdAt DateTime     @default(now())
+}
+
+model OrderActivity {
+  id        String      @id @default(cuid())
+  orderId   String
+  order     CustomOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  actorId   String?
+  actor     User?       @relation("OrderActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
+  action    String
+  details   Json?
+  createdAt DateTime    @default(now())
+
+  @@index([orderId, createdAt])
+}
+
+model OrderDelivery {
+  id           String      @id @default(cuid())
+  orderId      String
+  order        CustomOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  version      Int         @default(1)
+  fileKey      String
+  fileName     String
+  mimeType     String
+  fileSize     Int         @default(0)
+  notes        String?     @db.Text
+  uploadedById String
+  uploadedBy   User        @relation("OrderDeliveryUploader", fields: [uploadedById], references: [id])
+  isRevision   Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+
+  @@index([orderId, version])
+}
+
+model OrderAttachment {
+  id        String      @id @default(cuid())
+  orderId   String
+  order     CustomOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  fileKey   String
+  fileName  String
+  mimeType  String
+  createdAt DateTime    @default(now())
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType @default(SYSTEM)
+  category  String?
+  title     String
+  body      String
+  link      String?
+  read      Boolean          @default(false)
+  metadata  Json?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
+  @@index([userId, type])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id])
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  ipHash     String?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model UserBan {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation("BannedUser", fields: [userId], references: [id], onDelete: Cascade)
+  reason       String?
+  banType      String    @default("PERMANENT")
+  banScope     String    @default("ACCOUNT")
+  ipHash       String?
+  expiresAt    DateTime?
+  internalNote String?   @db.Text
+  bannedById   String?
+  bannedBy     User?     @relation("BanActor", fields: [bannedById], references: [id])
+  liftedAt     DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([expiresAt])
+  @@index([banScope])
+}
+
+model UserPermission {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation("UserPermissions", fields: [userId], references: [id], onDelete: Cascade)
+  permissionKey String
+  granted       Boolean  @default(true)
+  grantedById   String?
+  grantedBy     User?    @relation("PermissionGrants", fields: [grantedById], references: [id], onDelete: SetNull)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, permissionKey])
+  @@index([userId])
+  @@map("user_permissions")
+}
+
+model UserRoleHistory {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation("UserRoleHistory", fields: [userId], references: [id], onDelete: Cascade)
+  fromRole    UserRole?
+  toRole      UserRole
+  changedById String?
+  changedBy   User?     @relation("RoleChanges", fields: [changedById], references: [id], onDelete: SetNull)
+  reason      String?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@map("user_role_history")
+}
+
+enum ModerationAction {
+  BAN_PERMANENT
+  BAN_TEMPORARY
+  UNBAN
+  SUSPEND
+  UNSUSPEND
+  MUTE
+  UNMUTE
+  WARN
+  RESET_WARNINGS
+  SOFT_DELETE
+  RESTORE
+  ROLE_CHANGE
+}
+
+model UserModerationLog {
+  id           String           @id @default(cuid())
+  userId       String
+  user         User             @relation("ModerationTarget", fields: [userId], references: [id], onDelete: Cascade)
+  actorId      String?
+  actor        User?            @relation("ModerationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  action       ModerationAction
+  reason       String?          @db.Text
+  internalNote String?          @db.Text
+  expiresAt    DateTime?
+  metadata     Json?
+  createdAt    DateTime         @default(now())
+
+  @@index([userId, createdAt])
+  @@index([actorId])
+  @@index([action])
+}
+
+model SupportTicket {
+  id           String         @id @default(cuid())
+  ticketNumber String         @unique
+  userId       String
+  user         User           @relation("TicketUser", fields: [userId], references: [id])
+  assigneeId   String?
+  assignee     User?          @relation("TicketAssignee", fields: [assigneeId], references: [id])
+  subject      String
+  category     TicketCategory
+  priority     TicketPriority @default(NORMAL)
+  status       TicketStatus   @default(NEW)
+  department   TicketDepartment @default(SUPPORT)
+  tags         Json?
+  slaResponseDueAt DateTime?
+  slaResolveDueAt  DateTime?
+  firstResponseAt  DateTime?
+  escalatedAt      DateTime?
+  mergedIntoId     String?
+  closedAt     DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  messages     TicketMessage[]
+  attachments  TicketAttachment[]
+  watchers     TicketWatcher[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([department])
+  @@index([category])
+  @@index([assigneeId])
+  @@index([priority])
+  @@index([createdAt])
+  @@index([slaResponseDueAt])
+  @@index([slaResolveDueAt])
+}
+
+model TicketWatcher {
+  id        String        @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User          @relation("TicketWatcher", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+
+  @@unique([ticketId, userId])
+  @@index([userId])
+  @@index([ticketId])
+}
+
+model TicketMessage {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  content   String   @db.Text
+  isStaff   Boolean  @default(false)
+  isInternal Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  attachments TicketAttachment[]
+
+  @@index([ticketId])
+  @@index([createdAt])
+}
+
+model TicketAttachment {
+  id           String         @id @default(cuid())
+  ticketId     String
+  ticket       SupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  messageId    String?
+  message      TicketMessage? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  fileKey      String
+  fileName     String
+  mimeType     String
+  fileSize     Int
+  uploadedById String
+  createdAt    DateTime       @default(now())
+
+  @@index([ticketId])
+}
+
+model BlogPost {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  excerpt     String?
+  content     String    @db.Text
+  coverUrl    String?
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model PlatformDailyMetric {
+  id             String   @id @default(cuid())
+  day            DateTime @db.Date
+  pageViews      Int      @default(0)
+  uniqueVisitors Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([day])
+}
+
+model SiteSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value Json
+}
+
+enum EmailLogStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model EmailLog {
+  id          String         @id @default(cuid())
+  userId      String?
+  user        User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  to          String
+  subject     String
+  templateKey String?
+  status      EmailLogStatus @default(PENDING)
+  error       String?        @db.Text
+  html        String?        @db.Text
+  attempts    Int            @default(0)
+  sentAt      DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([status, createdAt])
+  @@index([templateKey])
+  @@index([userId, createdAt])
+  @@index([to])
+}
+
+model Announcement {
+  id                 String   @id @default(cuid())
+  title              String
+  content            String   @db.Text
+  link               String?
+  isActive           Boolean  @default(true)
+  visibilityTargets  Json     @default("[\"everyone\"]")
+  startsAt           DateTime @default(now())
+  endsAt             DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([isActive, startsAt])
+}
+
+model MembershipPlan {
+  id            String      @id @default(cuid())
+  slug          String      @unique
+  name          String
+  description   String?     @db.Text
+  priceCents    Int
+  currency      String      @default("EUR")
+  billingType   BillingType
+  stripePriceId String?
+  interval      String?
+  features      Json        @default("[]")
+  perks         Json        @default("{}")
+  badgeSlug     String?
+  sortOrder     Int         @default(0)
+  isActive      Boolean     @default(true)
+  isFeatured    Boolean     @default(false)
+  translations  Json?
+  originalPriceCents  Int?
+  saleDiscountPercent Int?
+  saleEndsAt          DateTime?
+  cardStyle           Json?
+  iconKey             String?
+  planKind            MembershipPlanKind @default(STANDARD)
+  stockLimit          Int?
+  soldCount           Int                @default(0)
+  durationDays        Int?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  subscriptions Subscription[]
+  purchases       MembershipPurchase[]
+  userMemberships UserMembership[]
+  shopProducts    ShopProduct[]
+  campaigns       MembershipCampaign[]
+
+  @@index([isActive, sortOrder])
+}
+
+model MembershipCampaign {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  title       String
+  description String?         @db.Text
+  badgeLabel  String?
+  priceCents  Int
+  currency    String          @default("EUR")
+  planId      String?
+  plan        MembershipPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+  totalSlots  Int
+  soldSlots   Int             @default(0)
+  isVisible   Boolean         @default(true)
+  isActive    Boolean         @default(true)
+  bannerText  String?
+  sortOrder   Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([isActive, isVisible])
+}
+
+model UserMembership {
+  id                   String               @id @default(cuid())
+  userId               String               @unique
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  membershipType       MembershipTier       @default(FREE)
+  status               UserMembershipStatus @default(ACTIVE)
+  planId               String?
+  plan                 MembershipPlan?      @relation(fields: [planId], references: [id], onDelete: SetNull)
+  stripeSubscriptionId String?              @unique
+  renewalDate          DateTime?
+  cancelDate           DateTime?
+  isLifetime           Boolean              @default(false)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  @@index([membershipType, status])
+  @@index([stripeSubscriptionId])
+}
+
+model MembershipPurchase {
+  id              String         @id @default(cuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId          String
+  plan            MembershipPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  stripePaymentId String?
+  amountCents     Int
+  expiresAt       DateTime?
+  createdAt       DateTime       @default(now())
+
+  @@index([userId])
+  @@index([planId])
+}
+
+model AdPlacement {
+  id             String         @id @default(cuid())
+  slug           String         @unique
+  name           String
+  location       String
+  format         AdFormat       @default(BANNER)
+  provider       AdProviderType @default(CUSTOM)
+  providerConfig Json?
+  customHtml     String?        @db.Text
+  imageUrl       String?
+  linkUrl        String?
+  width          Int?
+  height         Int?
+  isEnabled      Boolean        @default(true)
+  mobileOnly     Boolean        @default(false)
+  desktopOnly    Boolean        @default(false)
+  scheduleStart  DateTime?
+  scheduleEnd    DateTime?
+  impressions    Int            @default(0)
+  clicks         Int            @default(0)
+  sortOrder      Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([location, isEnabled])
+  @@index([sortOrder])
+}
+
+model AdProviderConfig {
+  id        String         @id @default(cuid())
+  type      AdProviderType @unique
+  name      String
+  config    Json           @default("{}")
+  scriptHtml String?       @db.Text
+  isEnabled Boolean        @default(false)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model PermissionGroup {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  description     String?
+  permissions     Json     @default("[]")
+  isSystem        Boolean  @default(false)
+  isArchived      Boolean  @default(false)
+  isDisabled      Boolean  @default(false)
+  sortOrder       Int      @default(0)
+  color           String?
+  badge           String?
+  icon            String?
+  hierarchyTier   String?
+  dashboardAccess Json     @default("[]")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  users           User[]
+
+  @@index([isArchived, sortOrder])
+}
+
+model ExclusiveProgram {
+  id              String               @id @default(cuid())
+  modId           String
+  mod             Mod                  @relation(fields: [modId], references: [id], onDelete: Cascade)
+  authorId        String
+  author          User                 @relation("ExclusiveAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  type            ExclusiveProgramType
+  title           String
+  description     String?              @db.Text
+  maxSlots        Int?
+  currentCount    Int                  @default(0)
+  waitlistEnabled Boolean              @default(true)
+  ndaRequired     Boolean              @default(false)
+  discordRequired Boolean              @default(false)
+  isActive        Boolean              @default(true)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  builds       ExclusiveBuild[]
+  applications ExclusiveApplication[]
+  inviteCodes  ExclusiveInviteCode[]
+
+  @@index([modId, isActive])
+  @@index([authorId])
+}
+
+model ExclusiveBuild {
+  id          String           @id @default(cuid())
+  programId   String
+  program     ExclusiveProgram   @relation(fields: [programId], references: [id], onDelete: Cascade)
+  version     String
+  fileKey     String
+  fileName    String
+  fileSize    Int
+  expiresAt   DateTime?
+  downloadLimit Int?
+  createdAt   DateTime         @default(now())
+
+  @@index([programId])
+}
+
+model ExclusiveApplication {
+  id          String                     @id @default(cuid())
+  programId   String
+  program     ExclusiveProgram           @relation(fields: [programId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      ExclusiveApplicationStatus @default(PENDING)
+  message     String?                    @db.Text
+  feedback    String?                    @db.Text
+  ndaAccepted Boolean                    @default(false)
+  inviteCode  String?
+  reviewedAt  DateTime?
+  createdAt   DateTime                   @default(now())
+  updatedAt   DateTime                   @updatedAt
+
+  @@unique([programId, userId])
+  @@index([programId, status])
+}
+
+model ExclusiveInviteCode {
+  id        String           @id @default(cuid())
+  programId String
+  program   ExclusiveProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  code      String           @unique
+  maxUses   Int              @default(1)
+  uses      Int              @default(0)
+  expiresAt DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([programId])
+}
+
+model TranslationJob {
+  id             String               @id @default(cuid())
+  entityType     String
+  entityId       String
+  field          String
+  sourceLocale   String
+  targetLocale   String
+  sourceText     String               @db.Text
+  translatedText String?              @db.Text
+  status         TranslationJobStatus @default(PENDING)
+  error          String?
+  approvedById   String?
+  approvedBy     User?                @relation("TranslationApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedAt     DateTime?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([status, targetLocale])
+}
+
+model Achievement {
+  id          String              @id @default(cuid())
+  slug        String              @unique
+  name        String
+  description String?             @db.Text
+  title       String?
+  category    AchievementCategory
+  rarity      AchievementRarity   @default(COMMON)
+  icon        String?
+  imageUrl    String?
+  xpReward    Int                 @default(0)
+  isHidden    Boolean             @default(false)
+  isSeasonal  Boolean             @default(false)
+  seasonStart DateTime?
+  seasonEnd   DateTime?
+  unlockRule  Json?
+  translations Json?
+  animated    Boolean             @default(false)
+  glowEffect  Boolean             @default(true)
+  sortOrder   Int                 @default(0)
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  userAchievements UserAchievement[]
+
+  @@index([category, isActive])
+  @@index([rarity])
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  unlockedAt    DateTime    @default(now())
+  isShowcased   Boolean     @default(false)
+  showcaseOrder Int?
+  grantedById   String?
+  progress      Int         @default(100)
+
+  @@unique([userId, achievementId])
+  @@index([userId, isShowcased])
+}
+
+model UserProgress {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  xp        Int      @default(0)
+  level     Int      @default(1)
+  updatedAt DateTime @updatedAt
+}
+
+enum ShopProductCategory {
+  CREDITS
+  MEMBERSHIP
+  MODS
+  EXCLUSIVE
+  BUNDLES
+  ACCESS
+  CUSTOM_SERVICES
+}
+
+enum ShopProductType {
+  CREDIT_PACK
+  MEMBERSHIP
+  MOD
+  EXCLUSIVE
+  BUNDLE
+  SUBSCRIPTION
+  ACCESS
+  CUSTOM
+}
+
+enum ShopPricingMode {
+  FIXED
+  VARIABLE
+  STARTING_FROM
+  QUOTE
+  SUBSCRIPTION
+  ONE_TIME
+}
+
+enum ShopProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+  DISABLED
+}
+
+enum ShopFormFieldType {
+  TEXT
+  TEXTAREA
+  DROPDOWN
+  CHECKBOX
+  RADIO
+  DATE
+  IMAGE_UPLOAD
+  FILE_UPLOAD
+}
+
+enum ShopMediaType {
+  COVER
+  BANNER
+  FEATURED
+  GALLERY
+  EXAMPLE
+  VIDEO
+}
+
+model ShopProductTypeDefinition {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?  @db.Text
+  iconKey     String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  isCustom    Boolean  @default(true)
+  translations Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products ShopProduct[]
+
+  @@index([isActive, sortOrder])
+}
+
+model ShopCategory {
+  id           String         @id @default(cuid())
+  slug         String         @unique
+  name         String
+  description  String?        @db.Text
+  parentId     String?
+  parent       ShopCategory?  @relation("ShopCategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children     ShopCategory[] @relation("ShopCategoryTree")
+  sortOrder    Int            @default(0)
+  isActive     Boolean        @default(true)
+  translations Json?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  products          ShopProduct[] @relation("ProductCategory")
+  subcategoryProducts ShopProduct[] @relation("ProductSubcategory")
+
+  @@index([parentId, sortOrder])
+  @@index([isActive, sortOrder])
+}
+
+model ShopProduct {
+  id               String              @id @default(cuid())
+  slug             String              @unique
+  name             String
+  shortDescription String?             @db.Text
+  description      String?             @db.Text
+  category         ShopProductCategory @default(CUSTOM_SERVICES)
+  productType      ShopProductType     @default(CUSTOM)
+  customTypeId     String?
+  customType       ShopProductTypeDefinition? @relation(fields: [customTypeId], references: [id], onDelete: SetNull)
+  shopCategoryId   String?
+  shopCategory     ShopCategory?       @relation("ProductCategory", fields: [shopCategoryId], references: [id], onDelete: SetNull)
+  subcategoryId    String?
+  subcategory      ShopCategory?       @relation("ProductSubcategory", fields: [subcategoryId], references: [id], onDelete: SetNull)
+  tags             Json                @default("[]")
+  status           ShopProductStatus   @default(ACTIVE)
+  pricingMode      ShopPricingMode     @default(FIXED)
+  creditPrice      Int                 @default(0)
+  priceCents       Int                 @default(0)
+  stripePriceId    String?
+  creditsAmount    Int?
+  modId            String?
+  mod              Mod?                @relation(fields: [modId], references: [id], onDelete: SetNull)
+  membershipPlanId String?
+  membershipPlan   MembershipPlan?     @relation(fields: [membershipPlanId], references: [id], onDelete: SetNull)
+  thumbnailUrl     String?
+  coverImageUrl    String?
+  bannerImageUrl   String?
+  featuredImageUrl String?
+  videoUrl         String?
+  stock            Int?
+  isFeatured       Boolean             @default(false)
+  isActive         Boolean             @default(true)
+  isArchived       Boolean             @default(false)
+  visibility       String              @default("public")
+  salePercent      Int                 @default(0)
+  creatorShareBps  Int                 @default(0)
+  partnerShareBps  Int                 @default(0)
+  customFields     Json                @default("{}")
+  sortOrder        Int                 @default(0)
+  translations     Json?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  formFields ShopProductFormField[]
+  media      ShopProductMedia[]
+  purchases  ShopPurchase[]
+  orders     CustomOrder[]
+
+  @@index([isActive, isFeatured, sortOrder])
+  @@index([status, isArchived])
+  @@index([category])
+  @@index([shopCategoryId])
+  @@index([customTypeId])
+}
+
+model ShopProductFormField {
+  id          String            @id @default(cuid())
+  productId   String
+  product     ShopProduct       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  fieldType   ShopFormFieldType
+  label       String
+  placeholder String?
+  helpText    String?
+  required    Boolean           @default(false)
+  options     Json?
+  validation  Json?
+  sortOrder   Int               @default(0)
+
+  @@index([productId, sortOrder])
+}
+
+model ShopProductMedia {
+  id        String        @id @default(cuid())
+  productId String
+  product   ShopProduct   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  mediaType ShopMediaType @default(GALLERY)
+  url       String
+  alt       String?
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+
+  @@index([productId, mediaType, sortOrder])
+}
+
+model ShopPurchase {
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId       String
+  product         ShopProduct  @relation(fields: [productId], references: [id])
+  creditsSpent    Int          @default(0)
+  priceCents      Int          @default(0)
+  stripePaymentId String?
+  formResponses   Json?
+  customOrder     CustomOrder?
+  createdAt       DateTime     @default(now())
+
+  @@index([userId, createdAt])
+  @@index([productId])
+  @@index([stripePaymentId])
+}
+
+model FileScanLog {
+  id            String         @id @default(cuid())
+  modVersionId  String?
+  modVersion    ModVersion?    @relation(fields: [modVersionId], references: [id], onDelete: SetNull)
+  modId         String?
+  fileName      String
+  fileSize      BigInt
+  sha256        String
+  status        FileScanStatus
+  detections    Int            @default(0)
+  totalEngines  Int            @default(0)
+  provider      String         @default("virustotal")
+  report        Json?
+  blocked       Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+
+  @@index([status, createdAt])
+  @@index([sha256])
+  @@index([modId])
+}
+
+model FileScan {
+  id            String            @id @default(cuid())
+  modVersionId  String?
+  modVersion    ModVersion?       @relation(fields: [modVersionId], references: [id], onDelete: SetNull)
+  fileKey       String
+  fileName      String
+  fileSize      BigInt
+  sha256        String
+  md5           String?
+  vtScanId      String?
+  vtPermalink   String?
+  scannedAt     DateTime?
+  status        FileScanStatus
+  riskLevel     SecurityRiskLevel @default(NONE)
+  riskScore     Int               @default(0)
+  detections    Int               @default(0)
+  totalEngines  Int               @default(0)
+  engineResults Json?
+  scanReport    Json?
+  cachedUntil   DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  reviews SecurityReview[]
+
+  @@index([sha256])
+  @@index([modVersionId])
+  @@index([status, scannedAt])
+  @@map("file_scans")
+}
+
+model SecurityReview {
+  id           String     @id @default(cuid())
+  modVersionId String
+  modVersion   ModVersion @relation(fields: [modVersionId], references: [id], onDelete: Cascade)
+  fileScanId   String?
+  fileScan     FileScan?  @relation(fields: [fileScanId], references: [id], onDelete: SetNull)
+  status       String
+  approvedById String?
+  approvedBy   User?      @relation("SecurityReviewer", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedAt   DateTime?
+  reason       String?
+  notes        String?    @db.Text
+  isTrusted    Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+
+  @@index([modVersionId])
+  @@index([status])
+  @@map("security_reviews")
+}
+
+model SecurityLog {
+  id           String              @id @default(cuid())
+  modVersionId String?
+  modId        String?
+  userId       String?
+  user         User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action       SecurityAuditAction
+  ipHash       String?
+  userAgent    String?             @db.VarChar(512)
+  deviceInfo   String?
+  metadata     Json?
+  createdAt    DateTime            @default(now())
+
+  @@index([action, createdAt])
+  @@index([modVersionId])
+  @@index([modId])
+  @@index([userId])
+  @@map("security_logs")
+}
+
+model TrustedFile {
+  id           String     @id @default(cuid())
+  modVersionId String     @unique
+  modVersion   ModVersion @relation(fields: [modVersionId], references: [id], onDelete: Cascade)
+  approvedById String
+  approvedBy   User       @relation("TrustedFileApprover", fields: [approvedById], references: [id], onDelete: Cascade)
+  approvedAt   DateTime   @default(now())
+  reason       String?
+  notes        String?    @db.Text
+
+  @@map("trusted_files")
+}
+
+model TrustedCreator {
+  id               String            @id @default(cuid())
+  creatorProfileId String            @unique
+  creatorProfile   CreatorProfile    @relation(fields: [creatorProfileId], references: [id], onDelete: Cascade)
+  trustLevel       CreatorTrustLevel @default(NEW)
+  approvedById     String?
+  approvedBy       User?             @relation("TrustedCreatorApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedAt       DateTime?
+  notes            String?           @db.Text
+  priorityScan     Boolean           @default(false)
+  fastTrack        Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([trustLevel])
+  @@map("trusted_creators")
+}
+
+model ScanQueue {
+  id           String          @id @default(cuid())
+  modVersionId String?
+  modVersion   ModVersion?     @relation(fields: [modVersionId], references: [id], onDelete: Cascade)
+  modId        String?
+  fileKey      String
+  fileName     String
+  fileSize     BigInt
+  sha256       String?
+  priority     Int             @default(0)
+  status       ScanQueueStatus @default(PENDING)
+  attempts     Int             @default(0)
+  maxAttempts  Int             @default(5)
+  lastError    String?         @db.Text
+  vtAnalysisId String?
+  scheduledAt  DateTime        @default(now())
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([status, priority, scheduledAt])
+  @@index([modVersionId])
+  @@map("scan_queue")
+}
+
+model ModCollection {
+  id            String                     @id @default(cuid())
+  slug          String                     @unique
+  title         String
+  description   String?                    @db.Text
+  coverUrl      String?
+  bannerUrl     String?
+  visibility    CollectionVisibility       @default(PUBLIC)
+  moderationStatus CollectionModerationStatus @default(APPROVED)
+  adminNotes    String?                    @db.Text
+  isFeatured    Boolean                    @default(false)
+  sortOrder     Int                        @default(0)
+  ownerId       String
+  owner         User                       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  creatorId     String?
+  creator       CreatorProfile?            @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  viewCount     Int                        @default(0)
+  downloadCount Int                        @default(0)
+  followerCount Int                        @default(0)
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+
+  items     ModCollectionItem[]
+  followers ModCollectionFollow[]
+  hostingBanners HostingPartnerBanner[]
+
+  serverPartnerEnabled Boolean         @default(false)
+  serverPartnerId      String?
+  serverPartner        HostingPartner? @relation("CollectionHostingPartner", fields: [serverPartnerId], references: [id], onDelete: SetNull)
+  serverPartnerLink    String?
+  serverPartnerBanner  String?
+
+  @@index([visibility, isFeatured])
+  @@index([moderationStatus, sortOrder])
+  @@index([ownerId])
+}
+
+model ModCollectionItem {
+  id           String        @id @default(cuid())
+  collectionId String
+  collection   ModCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  modId        String
+  mod          Mod           @relation(fields: [modId], references: [id], onDelete: Cascade)
+  sortOrder    Int           @default(0)
+  note         String?
+
+  @@unique([collectionId, modId])
+  @@index([collectionId, sortOrder])
+}
+
+model ModCollectionFollow {
+  id           String        @id @default(cuid())
+  collectionId String
+  collection   ModCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+
+  @@unique([collectionId, userId])
+}
+
+model ApiKey {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?   @db.Text
+  keyHash       String    @unique
+  keyPrefix     String
+  scopes        String[]
+  rateLimit     Int       @default(1000)
+  ipWhitelist   String[]  @default([])
+  isActive      Boolean   @default(true)
+  requestCount  Int       @default(0)
+  errorCount    Int       @default(0)
+  uploadCount   Int       @default(0)
+  uploadBytes   BigInt    @default(0)
+  lastUsedAt    DateTime?
+  expiresAt     DateTime?
+  createdById   String
+  createdBy     User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+
+  @@index([keyHash])
+  @@index([isActive])
+}
+
+model CreatorApplication {
+  id              String            @id @default(cuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status          ApplicationStatus @default(PENDING)
+  displayName     String
+  email           String
+  discord         String?
+  portfolioUrl    String?
+  youtubeUrl      String?
+  twitchUrl       String?
+  tiktokUrl       String?
+  instagramUrl    String?
+  xUrl            String?
+  websiteUrl      String?
+  message         String?           @db.Text
+  portfolioImages Json              @default("[]")
+  sampleModUrls   Json              @default("[]")
+  adminNotes      String?           @db.Text
+  reviewedById    String?
+  reviewedAt      DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([status, createdAt])
+  @@index([userId])
+}
+
+model PartnerApplication {
+  id                      String            @id @default(cuid())
+  userId                  String
+  user                    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status                  ApplicationStatus @default(PENDING)
+  creatorName             String
+  username                String?
+  email                   String
+  discord                 String?
+  youtubeUrl              String?
+  twitchUrl               String?
+  tiktokUrl               String?
+  instagramUrl            String?
+  xUrl                    String?
+  websiteUrl              String?
+  audienceSize            String?
+  country                 String?
+  platforms               Json              @default("[]")
+  promotionStrategy       String?           @db.Text
+  whyPartner              String?           @db.Text
+  socialLinks             Json              @default("{}")
+  customResponses         Json              @default("{}")
+  requiredChanges         String?           @db.Text
+  statusHistory           Json              @default("[]")
+  message                 String?           @db.Text
+  adminNotes              String?           @db.Text
+  assignedCreatorCode     String?
+  assignedPartnerCode     String?
+  assignedCommissionRuleId String?
+  assignedCommissionRule  CommissionRule?   @relation(fields: [assignedCommissionRuleId], references: [id], onDelete: SetNull)
+  reviewedById            String?
+  reviewedAt              DateTime?
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+
+  @@index([status, createdAt])
+  @@index([userId])
+  @@index([assignedCommissionRuleId])
+}
+
+model StorageUploadSession {
+  id             String              @id @default(cuid())
+  userId         String
+  user           User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose        String
+  fileKey        String
+  uploadId       String
+  fileName       String
+  fileSize       BigInt
+  contentType    String
+  status         UploadSessionStatus @default(IN_PROGRESS)
+  modId          String?
+  metadata       Json?
+  completedParts Json                @default("[]")
+  createdAt      DateTime            @default(now())
+  expiresAt      DateTime
+
+  @@index([userId, status])
+  @@index([uploadId])
+  @@index([createdAt])
+}
+
+model MediaFile {
+  id           String          @id @default(cuid())
+  fileName     String
+  originalName String
+  fileType     String
+  mimeType     String
+  fileSize     BigInt          @default(0)
+  storagePath  String          @unique
+  publicUrl    String
+  entityType   MediaEntityType
+  entityId     String?
+  uploadedById String
+  uploadedBy   User            @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
+  createdAt    DateTime        @default(now())
+
+  @@index([entityType, entityId])
+  @@index([uploadedById])
+  @@map("media_files")
+}
+
+enum TeamVisibility {
+  PUBLIC
+  INTERNAL
+  HIDDEN
+}
+
+enum TeamRoleGroup {
+  OWNER
+  ADMINISTRATOR
+  MANAGER
+  SUPPORT
+  MODERATOR
+  DESIGNER
+  CREATOR
+}
+
+model TeamDepartment {
+  id           String       @id @default(cuid())
+  slug         String       @unique
+  name         String
+  description  String?      @db.Text
+  sortOrder    Int          @default(0)
+  isActive     Boolean      @default(true)
+  translations Json?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  members TeamMember[]
+
+  @@index([isActive, sortOrder])
+}
+
+model TeamMember {
+  id           String          @id @default(cuid())
+  name         String
+  roleGroup    TeamRoleGroup   @default(SUPPORT)
+  roleBadge    String?
+  roleColor    String?
+  position     String
+  description  String?         @db.Text
+  email        String?
+  avatarUrl    String?
+  bannerUrl    String?
+  discordUrl   String?
+  youtubeUrl   String?
+  twitchUrl    String?
+  tiktokUrl    String?
+  instagramUrl String?
+  xUrl         String?
+  websiteUrl   String?
+  customLinks  Json?
+  departmentId String?
+  department   TeamDepartment? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  visibility   TeamVisibility  @default(PUBLIC)
+  sortOrder    Int             @default(0)
+  isActive     Boolean         @default(true)
+  userId       String?         @unique
+  user         User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([visibility, isActive, sortOrder])
+  @@index([departmentId, sortOrder])
+}
+
+enum ChatChannelType {
+  PUBLIC
+  DEPARTMENT
+  DM
+}
+
+model ChatChannel {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  name        String
+  description String?         @db.Text
+  type        ChatChannelType @default(PUBLIC)
+  department  String?
+  isArchived  Boolean         @default(false)
+  createdById String?
+  createdBy   User?           @relation("ChatChannelCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  members  ChatChannelMember[]
+  messages ChatMessage[]
+
+  @@index([type, isArchived])
+}
+
+model ChatChannelMember {
+  id         String      @id @default(cuid())
+  channelId  String
+  channel    ChatChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastReadAt DateTime?
+  joinedAt   DateTime    @default(now())
+
+  @@unique([channelId, userId])
+  @@index([userId])
+}
+
+model ChatMessage {
+  id        String       @id @default(cuid())
+  channelId String
+  channel   ChatChannel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  content   String       @db.Text
+  attachments Json?
+  replyToId String?
+  replyTo   ChatMessage? @relation("ChatReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies   ChatMessage[] @relation("ChatReplies")
+  editedAt  DateTime?
+  deletedAt DateTime?
+  createdAt DateTime     @default(now())
+
+  @@index([channelId, createdAt])
+  @@index([senderId])
+}
+
+enum ReportTargetType {
+  MOD
+  SOUND
+  GAME
+  USER
+  REVIEW
+  COMMENT
+  CREATOR
+  PARTNER
+}
+
+enum ReportCategory {
+  STOLEN
+  MALWARE
+  VIRUS
+  BROKEN_DOWNLOAD
+  BROKEN_FILE
+  COPYRIGHT
+  SPAM
+  SCAM
+  FAKE_CREATOR
+  ABUSIVE
+  OFFENSIVE_CONTENT
+  DUPLICATE_CONTENT
+  TOS
+  OTHER
+}
+
+enum ReportStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  NEEDS_MORE_INFO
+  INVESTIGATING
+  RESOLVED
+  REJECTED
+}
+
+enum ReportPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum ReportAssignmentRole {
+  MODERATOR
+  ADMIN
+  OWNER
+}
+
+model ContentReport {
+  id          String           @id @default(cuid())
+  reporterId  String
+  reporter    User             @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  targetType  ReportTargetType
+  targetId    String
+  category    ReportCategory
+  description String           @db.Text
+  attachments Json?
+  status      ReportStatus     @default(SUBMITTED)
+  priority    ReportPriority     @default(NORMAL)
+  assigneeId  String?
+  assignee    User?            @relation("ReportAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  assignmentRole ReportAssignmentRole?
+  adminNotes  String?          @db.Text
+  internalNotes String?        @db.Text
+  resolution  String?          @db.Text
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  resolvedAt  DateTime?
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+  @@index([reporterId])
+}
+
+enum DMCAStatus {
+  SUBMITTED
+  LEGAL_REVIEW
+  ACCEPTED
+  REMOVED
+  REJECTED
+}
+
+model DMCAClaim {
+  id             String     @id @default(cuid())
+  companyName    String
+  legalName      String
+  contactEmail   String
+  contactPhone   String?
+  infringingUrl  String
+  description    String     @db.Text
+  evidenceKeys   Json?
+  status         DMCAStatus @default(SUBMITTED)
+  assigneeId     String?
+  adminNotes     String?    @db.Text
+  resolution     String?    @db.Text
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  resolvedAt     DateTime?
+
+  @@index([status, createdAt])
+  @@index([contactEmail])
+}
+
+enum UserSecurityEventType {
+  LOGIN_SUCCESS
+  LOGIN_FAILED
+  MFA_ENABLED
+  MFA_DISABLED
+  MFA_CHALLENGE
+  BACKUP_CODE_USED
+  PASSWORD_CHANGED
+  SESSION_REVOKED
+}
+
+model UserSecurityEvent {
+  id        String                @id @default(cuid())
+  userId    String
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventType UserSecurityEventType
+  ipHash    String?
+  userAgent String?               @db.VarChar(512)
+  metadata  Json?
+  createdAt DateTime              @default(now())
+
+  @@index([userId, createdAt])
+  @@index([eventType, createdAt])
+}
+
+model UserMfaBackupCode {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model PlatformEvent {
+  id        String   @id @default(cuid())
+  type      String
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  modId     String?
+  mod       Mod?     @relation(fields: [modId], references: [id], onDelete: SetNull)
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([type, createdAt])
+  @@index([modId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model SearchQueryLog {
+  id          String   @id @default(cuid())
+  query       String
+  filters     Json?
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  resultCount Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([query])
+}
+
+model PlatformLanguage {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  flagIcon  String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+enum SiteBannerType {
+  GLOBAL
+  GAME
+  CATEGORY
+  MOD
+  PARTNER
+}
+
+enum SiteBannerFrequency {
+  ALWAYS
+  EVERY_5_MIN
+  EVERY_15_MIN
+  ONCE_SESSION
+  ONCE_DAY
+}
+
+model ReferralLink {
+  id              String         @id @default(cuid())
+  code            String         @unique
+  name            String
+  premiumType     MembershipTier @default(PREMIUM)
+  premiumDays     Int            @default(3)
+  maxUses         Int?
+  currentUses     Int            @default(0)
+  clickCount      Int            @default(0)
+  active          Boolean        @default(true)
+  trackingEnabled Boolean        @default(true)
+  expiresAt       DateTime?
+  createdById     String?
+  createdBy       User?          @relation("ReferralCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  signups         ReferralSignup[]
+
+  @@index([active, expiresAt])
+  @@index([code])
+}
+
+model ReferralSignup {
+  id             String       @id @default(cuid())
+  referralId     String
+  referral       ReferralLink @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  userId         String       @unique
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  premiumGranted Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+
+  @@index([referralId, createdAt])
+}
+
+model SiteBanner {
+  id               String              @id @default(cuid())
+  type             SiteBannerType      @default(GLOBAL)
+  title            String
+  description      String?             @db.Text
+  imageUrl         String?
+  linkUrl          String?
+  buttonText       String?
+  frequency        SiteBannerFrequency @default(ALWAYS)
+  isActive         Boolean             @default(true)
+  priority         Int                 @default(0)
+  gameId           String?
+  game             Game?               @relation(fields: [gameId], references: [id], onDelete: SetNull)
+  gameCategoryId   String?
+  gameCategory     GameCategory?       @relation(fields: [gameCategoryId], references: [id], onDelete: SetNull)
+  modId            String?
+  mod              Mod?                @relation(fields: [modId], references: [id], onDelete: SetNull)
+  partnerProfileId String?
+  partnerProfile   PartnerProfile?     @relation(fields: [partnerProfileId], references: [id], onDelete: SetNull)
+  startsAt         DateTime            @default(now())
+  endsAt           DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([isActive, type, priority])
+  @@index([gameId])
+  @@index([gameCategoryId])
+}
+
+enum HostingBannerSize {
+  RECT_300x250
+  LEADERBOARD_728x90
+  BILLBOARD_970x250
+  RESPONSIVE
+}
+
+enum ModCollaboratorRole {
+  LEAD_CREATOR
+  DEVELOPER
+  SCRIPTER
+  MODELER
+  DESIGNER
+  SOUND_DESIGNER
+  TESTER
+}
+
+enum HostingClickContext {
+  MOD
+  COLLECTION
+  BANNER
+  SIDEBAR
+  CTA
+}
+
+model HostingPartner {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String
+  description  String?  @db.Text
+  logoUrl      String?
+  websiteUrl   String?
+  affiliateUrl String
+  trackingId   String?
+  apiProvider  String?
+  apiConfig    Json?
+  isActive     Boolean  @default(true)
+  isGlobal     Boolean  @default(false)
+  sortOrder    Int      @default(0)
+  totalClicks  Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  banners              HostingPartnerBanner[]
+  gameLinks            GameHostingPartner[]
+  modOverrides         Mod[]           @relation("ModHostingPartner")
+  collectionOverrides  ModCollection[] @relation("CollectionHostingPartner")
+  clicks               HostingClick[]
+
+  @@index([isActive, sortOrder])
+  @@index([isGlobal])
+}
+
+model HostingPartnerBanner {
+  id           String            @id @default(cuid())
+  partnerId    String
+  partner      HostingPartner    @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  size         HostingBannerSize @default(RESPONSIVE)
+  imageUrl     String
+  webpUrl      String?
+  avifUrl      String?
+  targetUrl    String?
+  gameId       String?
+  game         Game?             @relation(fields: [gameId], references: [id], onDelete: SetNull)
+  modId        String?
+  mod          Mod?              @relation(fields: [modId], references: [id], onDelete: SetNull)
+  collectionId String?
+  collection   ModCollection?    @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  creatorId    String?
+  creator      CreatorProfile?   @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  isActive     Boolean           @default(true)
+  clickCount   Int               @default(0)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([partnerId, isActive])
+  @@index([gameId])
+  @@index([modId])
+  @@index([collectionId])
+  @@index([creatorId])
+}
+
+model GameHostingPartner {
+  id        String         @id @default(cuid())
+  gameId    String         @unique
+  game      Game           @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  partnerId String
+  partner   HostingPartner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([partnerId])
+}
+
+model HostingClick {
+  id           String              @id @default(cuid())
+  partnerId    String
+  partner      HostingPartner      @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  userId       String?
+  user         User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  modId        String?
+  collectionId String?
+  gameId       String?
+  context      HostingClickContext @default(CTA)
+  countryCode  String?
+  referrer     String?
+  converted    Boolean             @default(false)
+  revenueCents Int                 @default(0)
+  metadata     Json?
+  createdAt    DateTime            @default(now())
+
+  @@index([partnerId, createdAt(sort: Desc)])
+  @@index([modId, createdAt(sort: Desc)])
+  @@index([collectionId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+}
+
+model ModCollaborator {
+  id              String              @id @default(cuid())
+  modId           String
+  mod             Mod                 @relation(fields: [modId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User                @relation("ModCollaboratorUser", fields: [userId], references: [id], onDelete: Cascade)
+  role            ModCollaboratorRole @default(DEVELOPER)
+  revenueShareBps Int                 @default(0)
+  isPublic        Boolean             @default(true)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@unique([modId, userId])
+  @@index([userId])
+}
+
+enum TutorialType {
+  YOUTUBE
+  VIDEO
+  ARTICLE
+  MIXED
+}
+
+enum TutorialLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum TutorialStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model TutorialCategory {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  name        String
+  description String?    @db.Text
+  sortOrder   Int        @default(0)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  tutorials   Tutorial[]
+
+  @@index([isActive, sortOrder])
+}
+
+model Tutorial {
+  id                 String            @id @default(cuid())
+  slug               String            @unique
+  title              String
+  description        String?           @db.Text
+  content            String?           @db.Text
+  type               TutorialType
+  level              TutorialLevel     @default(BEGINNER)
+  status             TutorialStatus    @default(DRAFT)
+  categoryId         String?
+  category           TutorialCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  authorId           String
+  author             User              @relation("TutorialAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  youtubeUrl         String?
+  youtubeVideoId     String?
+  youtubeTitle       String?
+  youtubeThumbnail   String?
+  youtubeDurationSec Int?
+  youtubeChannel     String?
+  videoFileKey       String?
+  videoUrl           String?
+  videoThumbUrl      String?
+  videoDurationSec   Int?
+  viewCount          Int               @default(0)
+  likeCount          Int               @default(0)
+  commentCount       Int               @default(0)
+  avgWatchSec        Float             @default(0)
+  publishedAt        DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  likes              TutorialLike[]
+  comments           TutorialComment[]
+  views              TutorialView[]
+
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([categoryId, status])
+  @@index([level, status])
+  @@index([type, status])
+}
+
+model TutorialLike {
+  id         String   @id @default(cuid())
+  tutorialId String
+  tutorial   Tutorial @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([tutorialId, userId])
+}
+
+model TutorialComment {
+  id         String   @id @default(cuid())
+  tutorialId String
+  tutorial   Tutorial @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content    String   @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([tutorialId, createdAt(sort: Desc)])
+}
+
+model TutorialView {
+  id         String   @id @default(cuid())
+  tutorialId String
+  tutorial   Tutorial @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
+  userId     String?
+  watchSec   Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@index([tutorialId, createdAt(sort: Desc)])
+}

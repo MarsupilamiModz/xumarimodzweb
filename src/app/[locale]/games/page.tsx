@@ -1,0 +1,39 @@
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getGamesDiscoveryCards } from "@/lib/game-discovery";
+import { GameDiscoveryGrid } from "@/components/games/game-discovery-grid";
+import { Card } from "@/components/ui/card";
+import type { Locale } from "@/i18n/config";
+import type { Metadata } from "next";
+import { REVALIDATE } from "@/lib/cache";
+import { SITE } from "@/lib/site";
+
+export const revalidate = REVALIDATE.catalog;
+
+export const metadata: Metadata = {
+  title: "Games",
+  description: `Browse all supported games on ${SITE.name} and discover premium mods.`,
+};
+
+export default async function GamesPage({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
+
+  setRequestLocale(locale);
+  const t = await getTranslations("games");
+  const games = await getGamesDiscoveryCards().catch(() => []);
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      <h1 className="text-3xl font-bold text-gradient">{t("title")}</h1>
+      <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
+      <div className="mt-10">
+        {games.length === 0 ? (
+          <Card className="glass p-12 text-center text-muted-foreground">
+            {t("empty")}
+          </Card>
+        ) : (
+          <GameDiscoveryGrid locale={locale} games={games} layout="games" priorityCount={10} />
+        )}
+      </div>
+    </div>
+  );
+}

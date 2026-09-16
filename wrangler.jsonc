@@ -1,0 +1,41 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "xumarimodzweb",
+  "compatibility_date": "2026-09-16",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "xumarimodz"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      // Placeholder bucket name — create it with:
+      //   npx wrangler r2 bucket create xumarimodz-incremental-cache
+      // (a dedicated bucket for Next's ISR/data cache, separate from any
+      // bucket you already use for mod/asset storage).
+      "bucket_name": "xumarimodz-incremental-cache","preview_bucket_name": "xumarimodz-incremental-cache"
+    }
+  ],
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      // Placeholder — replace with the real id from `npx wrangler hyperdrive create`
+      // (see the migration notes for the required manual setup steps).
+      "id": "8dabf9cd9fa14c6e8f8670a83dfd8c7c"
+    }
+  ],
+  "vars": {
+    "NEXT_RUNTIME_TARGET": "cloudflare"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

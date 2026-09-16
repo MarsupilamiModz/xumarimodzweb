@@ -1,0 +1,93 @@
+import { getDb } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
+import { getObjectBufferFromR2 } from "@/lib/r2";
+import { parseAudioMetadata, mimeFromAudioFileName } from "@/lib/audio-metadata";
+import { estimateBitrateKbps } from "@/lib/sound-storage";
+import { pickPrismaModelFields } from "@/lib/prisma-schema";
+
+const MAX_PROBE_BYTES = 8 * 1024 * 1024;
+
+type SoundProfileRecord = Record<string, unknown> & {
+  previewFileKey?: string | null;
+  previewFileName?: string | null;
+  previewFileSize?: bigint | number | null;
+  previewDurationSeconds?: number | null;
+  durationSeconds?: number | null;
+};
+
+function readSoundProfileExtras(profile: SoundProfileRecord) {
+  return {
+    previewMimeType: (profile.previewMimeType as string | null | undefined) ?? null,
+    previewBitrateKbps: (profile.previewBitrateKbps as number | null | undefined) ?? null,
+  };
+}
+
+export async function probeAudioFromStorage(
+  fileKey: string,
+  fileName: string,
+  contentType?: string | null,
+  fileSizeBytes?: number | null
+) {
+  try {
+    const buffer = await getObjectBufferFromR2(fileKey);
+    const slice = buffer.subarray(0, Math.min(buffer.length, MAX_PROBE_BYTES));
+    const meta = parseAudioMetadata(slice, fileName, contentType, fileSizeBytes);
+    if (!meta.durationSeconds && fileSizeBytes && meta.bitrateKbps) {
+      meta.durationSeconds = Math.round((fileSizeBytes * 8) / (meta.bitrateKbps * 1000));
+    }
+    if (!meta.bitrateKbps && meta.durationSeconds && fileSizeBytes) {
+      meta.bitrateKbps = estimateBitrateKbps(fileSizeBytes, meta.durationSeconds);
+    }
+    return meta;
+  } catch (err) {
+    console.error("[audio-probe]", fileKey, err);
+    return {
+      durationSeconds: null,
+      bitrateKbps: null,
+      mimeType: mimeFromAudioFileName(fileName),
+    };
+  }
+}
+
+export async function ensureSoundProfileMetadata(modId: string) {
+  const profile = (await (await getDb()).soundProfile.findUnique({ where: { modId } })) as
+    | SoundProfileRecord
+    | null;
+  if (!profile?.previewFileKey) return null;
+
+  const extras = readSoundProfileExtras(profile);
+  const storedDuration = profile.previewDurationSeconds ?? profile.durationSeconds ?? 0;
+  const hasValidDuration = storedDuration > 0;
+  if (hasValidDuration && extras.previewMimeType && extras.previewBitrateKbps) {
+    return profile;
+  }
+
+  const fileSize = profile.previewFileSize ? Number(profile.previewFileSize) : null;
+  const meta = await probeAudioFromStorage(
+    profile.previewFileKey,
+    profile.previewFileName ?? "audio.mp3",
+    extras.previewMimeType,
+    fileSize
+  );
+
+  const durationSeconds =
+    (meta.durationSeconds && meta.durationSeconds > 0 ? meta.durationSeconds : null) ??
+    (storedDuration > 0 ? storedDuration : null) ??
+    profile.durationSeconds ??
+    null;
+
+  if (!durationSeconds && !meta.mimeType) return profile;
+
+  const data = pickPrismaModelFields("SoundProfile", {
+    previewDurationSeconds: durationSeconds ?? undefined,
+    durationSeconds: durationSeconds ?? profile.durationSeconds ?? undefined,
+    previewMimeType: meta.mimeType,
+    previewBitrateKbps: meta.bitrateKbps ?? undefined,
+  });
+  if (Object.keys(data).length === 0) return profile;
+
+  return (await getDb()).soundProfile.update({
+    where: { modId },
+    data: data as Prisma.SoundProfileUncheckedUpdateInput,
+  });
+}
